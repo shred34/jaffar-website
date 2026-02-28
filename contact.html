@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact - Tristan Linder</title>
+    <style>
+      /* Rebond Grotesque locale */
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Extralight-BF6618904107ccc.otf")
+          format("opentype");
+        font-weight: 200;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Light-BF66189040e6001.otf")
+          format("opentype");
+        font-weight: 300;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Regular-BF66189040b697b.otf")
+          format("opentype");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Bold-BF66189040400df.otf")
+          format("opentype");
+        font-weight: 700;
+        font-style: normal;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Rebond Grotesque", sans-serif;
+        font-weight: 200;
+        background: #f8f8f8;
+        overflow-x: hidden;
+      }
+
+      /* Back arrow (same style as project pages) */
+      .back-arrow {
+        position: fixed;
+        /* fixed to exactly the header position on home */
+        top: 20px;
+        left: 20px;
+        width: 70px;
+        height: 70px;
+        cursor: pointer;
+        z-index: 5000;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .back-arrow::before {
+        display: none;
+      }
+
+      .back-arrow svg {
+        transition: transform 0.3s ease;
+      }
+
+      .back-arrow:hover svg {
+        transform: scale(1.15);
+      }
+
+      .back-arrow:hover .arrow-glow-group {
+        filter: url(#arrowGlowHover);
+      }
+
+      @keyframes floatH {
+        0%,
+        100% {
+          transform: translateX(0px);
+        }
+        50% {
+          transform: translateX(-6px);
+        }
+      }
+
+      .contact-page {
+        /* lower the form so back-arrow and title have breathing room */
+        padding: 140px 40px 40px;
+        max-width: 800px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .contact-form {
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100%;
+        max-width: 660px;
+      }
+
+      .contact-icons {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+        justify-content: center;
+        padding-bottom: 5px;
+      }
+
+      .contact-icon {
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border-radius: 50%;
+        overflow: hidden;
+      }
+
+      .contact-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+
+      .contact-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .contact-icon:hover img {
+        transform: scale(1.05);
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+        letter-spacing: 0.3px;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        padding: 10px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        background: #fff;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #333;
+        box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
+      }
+
+      .form-group textarea {
+        resize: vertical;
+        min-height: 60px;
+      }
+
+      .send-button {
+        width: 100%;
+        background: #333;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: 200;
+        font-family: "Rebond Grotesque", sans-serif;
+        letter-spacing: 0.5px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 5px;
+      }
+
+      .send-button:hover {
+        background: #000;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .copy-notification {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #333;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 10000;
+        pointer-events: none;
+      }
+
+      .copy-notification.show {
+        opacity: 1;
+      }
+
+      @media (max-width: 768px) {
+        .contact-page {
+          /* keep same top padding on mobile so spacing matches desktop */
+          padding: 140px 20px 40px;
+        }
+        /* keep back-arrow fixed and same size on all viewports so it stays aligned */
+
+        .contact-icons {
+          gap: 20px;
+        }
+
+        .contact-icon {
+          width: 45px;
+          height: 45px;
+        }
+
+        .contact-form {
+          padding: 28px 24px 32px;
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="index.html" class="back-arrow" id="backArrow"
+      ><svg
+        width="34"
+        height="36"
+        viewBox="0 0 34 36"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        overflow="visible"
+      >
+        <defs>
+          <filter id="arrowGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="5"
+              flood-color="black"
+              flood-opacity="0.85"
+            />
+          </filter>
+          <filter
+            id="arrowGlowHover"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="8"
+              flood-color="black"
+              flood-opacity="1"
+            />
+          </filter>
+        </defs>
+        <g class="arrow-glow-group" filter="url(#arrowGlow)">
+          <path
+            d="M31 18L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+          <path
+            d="M14 6L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+          <path
+            d="M14 30L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+        </g></svg
+    ></a>
+
+    <div class="contact-page">
+      <div class="contact-form">
+        <form id="contactForm">
+          <div class="form-group">
+            <label for="name">Nom</label>
+            <input type="text" id="name" name="name" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+          <div class="form-group">
+            <label for="subject">Sujet</label>
+            <input type="text" id="subject" name="subject" required />
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="send-button">Envoyer le message</button>
+        </form>
+
+        <div class="contact-icons">
+          <div class="contact-icon" id="phoneIcon" title="Copier le numéro">
+            <img src="image/tel.png" alt="Téléphone" />
+          </div>
+          <a
+            href="mailto:tristanlinder79@gmail.com"
+            class="contact-icon"
+            title="Envoyer un email"
+          >
+            <img src="image/mail.png" alt="Email" />
+          </a>
+          <a
+            href="https://www.instagram.com/jaffar_wv/?igsh=MTV6ZHY5ZGliZzU4NQ%3D%3D"
+            target="_blank"
+            class="contact-icon"
+            title="Instagram"
+          >
+            <img src="image/insta.png" alt="Instagram" />
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="copy-notification" id="copyNotification">
+      Numéro copié : +41 78 729 02 71
+    </div>
+
+    <script>
+      // Gérer le formulaire de contact
+      document
+        .getElementById("contactForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const formData = new FormData(this);
+          const name = formData.get("name");
+          const email = formData.get("email");
+          const subject = formData.get("subject");
+          const message = formData.get("message");
+
+          const mailtoLink = `mailto:tristanlinder79@gmail.com?subject=${encodeURIComponent(
+            subject,
+          )}&body=${encodeURIComponent(
+            `Nom: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
+          )}`;
+
+          window.location.href = mailtoLink;
+          this.reset();
+        });
+
+      // Gérer le clic sur l'icône téléphone pour copier le numéro
+      document
+        .getElementById("phoneIcon")
+        .addEventListener("click", function () {
+          const phoneNumber = "+41787290271";
+
+          // Copier dans le presse-papier
+          navigator.clipboard
+            .writeText(phoneNumber)
+            .then(function () {
+              // Afficher la notification
+              const notification = document.getElementById("copyNotification");
+              notification.classList.add("show");
+
+              // Cacher la notification après 2 secondes
+              setTimeout(() => {
+                notification.classList.remove("show");
+              }, 2000);
+            })
+            .catch(function (err) {
+              // Fallback pour les navigateurs plus anciens
+              const textArea = document.createElement("textarea");
+              textArea.value = phoneNumber;
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand("copy");
+              document.body.removeChild(textArea);
+
+              // Afficher la notification
+              const notification = document.getElementById("copyNotification");
+              notification.classList.add("show");
+
+              setTimeout(() => {
+                notification.classList.remove("show");
+              }, 2000);
+            });
+        });
+    </script>
+  </body>
+</html>

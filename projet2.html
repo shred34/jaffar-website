@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paysage - Tristan Linder</title>
+    <style>
+      /* Rebond Grotesque locale */
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Extralight-BF6618904107ccc.otf")
+          format("opentype");
+        font-weight: 200;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Light-BF66189040e6001.otf")
+          format("opentype");
+        font-weight: 300;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Regular-BF66189040b697b.otf")
+          format("opentype");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Bold-BF66189040400df.otf")
+          format("opentype");
+        font-weight: 700;
+        font-style: normal;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Rebond Grotesque", sans-serif;
+        font-weight: 200;
+        background: #fff;
+        overflow-x: hidden;
+      }
+
+      .back-arrow {
+        position: fixed;
+        /* align with contact/back-arrow position */
+        top: 20px;
+        left: 20px;
+        width: 70px;
+        height: 70px;
+        cursor: pointer;
+        z-index: 5000;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .back-arrow::before {
+        display: none;
+      }
+
+      .back-arrow svg {
+        transition: transform 0.3s ease;
+      }
+
+      .back-arrow:hover svg {
+        transform: scale(1.15);
+      }
+
+      .back-arrow:hover .arrow-glow-group {
+        filter: url(#arrowGlowHover);
+      }
+
+      @keyframes floatH {
+        0%,
+        100% {
+          transform: translateX(0px);
+        }
+        50% {
+          transform: translateX(-6px);
+        }
+      }
+
+      .project-page {
+        padding: 140px 200px 100px 200px;
+        min-height: 100vh;
+      }
+
+      .photo-container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .photo-row {
+        display: flex;
+        gap: 70px;
+        margin-bottom: 160px;
+        align-items: flex-start;
+      }
+
+      .photo-item {
+        opacity: 1;
+        transition: all 1.3s cubic-bezier(0.19, 1, 0.22, 1);
+        position: relative;
+        cursor: pointer;
+      }
+
+      .photo-item.animate {
+        opacity: 0;
+        transform: translateY(100px) rotateX(20deg) rotateZ(-5deg) scale(0.85);
+      }
+
+      .photo-item.appear {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg) rotateZ(0deg) scale(1);
+      }
+
+      .photo-item.instant {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg) rotateZ(0deg) scale(1);
+      }
+
+      .photo-item.initial {
+        opacity: 0;
+        transform: translateY(120px) rotateX(25deg) rotateZ(-8deg) scale(0.8);
+        transition: all 2s cubic-bezier(0.19, 1, 0.22, 1);
+      }
+
+      .photo-item.initial.appear {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg) rotateZ(0deg) scale(1);
+      }
+
+      .photo-item.single {
+        max-width: 650px;
+        margin: 0 auto;
+      }
+
+      .photo-item.single.small {
+        max-width: 500px;
+      }
+
+      .photo-item.wide {
+        max-width: 580px;
+      }
+
+      .photo-item.wide.small {
+        max-width: 450px;
+      }
+
+      .photo-item.narrow {
+        max-width: 350px;
+      }
+
+      .photo-item.medium {
+        max-width: 450px;
+      }
+
+      .photo-item img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 0;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.12);
+      }
+
+      .photo-dot {
+        position: absolute;
+        top: 0;
+        right: -15px;
+        width: 8px;
+        height: 8px;
+        background: black;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .photo-item:hover .photo-dot {
+        opacity: 0.7;
+      }
+
+      /* Modal pour visualisation */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: white;
+        z-index: 4000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .modal img {
+        max-width: 90vw;
+        max-height: 90vh;
+        object-fit: contain;
+      }
+
+      /* Alignements créatifs pour paysages */
+      .row-1 {
+        justify-content: center;
+      }
+      .row-2 {
+        justify-content: flex-start;
+        align-items: flex-end;
+      }
+      .row-3 {
+        justify-content: space-around;
+        align-items: center;
+      }
+      .row-4 {
+        justify-content: center;
+      }
+      .row-5 {
+        justify-content: flex-end;
+        align-items: flex-start;
+      }
+      .row-6 {
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      .row-7 {
+        justify-content: center;
+      }
+      .row-8 {
+        justify-content: flex-start;
+        align-items: center;
+      }
+      .row-9 {
+        justify-content: space-around;
+        align-items: flex-start;
+      }
+      .row-10 {
+        justify-content: center;
+      }
+      .row-11 {
+        justify-content: space-evenly;
+        align-items: center;
+      }
+      .row-12 {
+        justify-content: flex-end;
+        align-items: flex-end;
+      }
+
+      @media (max-width: 768px) {
+        /* keep back-arrow fixed and same size on mobile to match contact */
+        .back-arrow {
+          top: 20px;
+          left: 20px;
+          width: 70px;
+          height: 70px;
+        }
+
+        .back-arrow::before {
+          font-size: 32px;
+        }
+
+        .project-page {
+          padding: 80px 30px 60px;
+        }
+
+        .photo-row {
+          flex-direction: column;
+          gap: 40px;
+          margin-bottom: 80px;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+
+        .photo-item {
+          max-width: 100% !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#" class="back-arrow" id="backArrow"
+      ><svg
+        width="34"
+        height="36"
+        viewBox="0 0 34 36"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        overflow="visible"
+      >
+        <defs>
+          <filter id="arrowGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="5"
+              flood-color="black"
+              flood-opacity="0.85"
+            />
+          </filter>
+          <filter
+            id="arrowGlowHover"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="8"
+              flood-color="black"
+              flood-opacity="1"
+            />
+          </filter>
+        </defs>
+        <g class="arrow-glow-group" filter="url(#arrowGlow)">
+          <path
+            d="M31 18L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+          <path
+            d="M14 6L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+          <path
+            d="M14 30L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+        </g></svg
+    ></a>
+
+    <div class="project-page">
+      <div class="photo-container">
+        <div class="photo-row row-1">
+          <div class="photo-item single small initial" data-index="0">
+            <img src="imagepro/paysage/paysage2.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-2">
+          <div class="photo-item wide small initial" data-index="1">
+            <img src="imagepro/paysage/paysage3.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item narrow initial" data-index="2">
+            <img src="imagepro/paysage/paysage4.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-3">
+          <div class="photo-item medium instant" data-index="3">
+            <img src="imagepro/paysage/paysage5.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item medium animate" data-index="4">
+            <img src="imagepro/paysage/paysage6.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-4">
+          <div class="photo-item single animate" data-index="5">
+            <img src="imagepro/paysage/paysage9.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-5">
+          <div class="photo-item narrow instant" data-index="6">
+            <img src="imagepro/paysage/paysage10.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item wide small animate" data-index="7">
+            <img src="imagepro/paysage/paysage11.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-6">
+          <div class="photo-item medium animate" data-index="8">
+            <img src="imagepro/paysage/paysage12.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item medium instant" data-index="9">
+            <img src="imagepro/paysage/paysage13.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-7">
+          <div class="photo-item single instant" data-index="10">
+            <img src="imagepro/paysage/paysage14.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-8">
+          <div class="photo-item wide animate" data-index="11">
+            <img src="imagepro/paysage/paysage15.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item narrow animate" data-index="12">
+            <img src="imagepro/paysage/paysage21.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-9">
+          <div class="photo-item medium instant" data-index="13">
+            <img src="imagepro/paysage/paysage23.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item medium animate" data-index="14">
+            <img src="imagepro/paysage/paysage24.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-10">
+          <div class="photo-item single instant" data-index="15">
+            <img src="imagepro/paysage/paysage25.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-11">
+          <div class="photo-item narrow animate" data-index="16">
+            <img src="imagepro/paysage/paysage26.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item narrow instant" data-index="17">
+            <img src="imagepro/paysage/paysage27.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item narrow animate" data-index="18">
+            <img src="imagepro/paysage/paysage28.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+
+        <div class="photo-row row-12">
+          <div class="photo-item wide instant" data-index="19">
+            <img src="imagepro/paysage/paysage29.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item narrow animate" data-index="20">
+            <img src="imagepro/paysage/paysage30.jpg" alt="" />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="modal">
+      <img id="modalImg" src="" alt="" />
+    </div>
+
+    <script>
+      let scrollPosition = 0;
+      let isModalOpen = false;
+
+      // Animation initiale des 3 premières photos
+      document.addEventListener("DOMContentLoaded", function () {
+        const initialPhotos = document.querySelectorAll(".photo-item.initial");
+
+        setTimeout(() => {
+          initialPhotos.forEach((photo, index) => {
+            setTimeout(() => {
+              photo.classList.add("appear");
+            }, index * 400);
+          });
+        }, 200);
+
+        // Intersection Observer pour les autres photos
+        const observerOptions = {
+          threshold: 0.15,
+          rootMargin: "0px 0px -80px 0px",
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry, index) => {
+            if (
+              entry.isIntersecting &&
+              entry.target.classList.contains("animate")
+            ) {
+              setTimeout(() => {
+                entry.target.classList.add("appear");
+              }, index * 120);
+            }
+          });
+        }, observerOptions);
+
+        // Observer toutes les photos avec animation
+        const animatedPhotos = document.querySelectorAll(".photo-item.animate");
+        animatedPhotos.forEach((photo) => {
+          observer.observe(photo);
+        });
+
+        // Gestion des clics sur les photos
+        const photoItems = document.querySelectorAll(".photo-item");
+        const modal = document.getElementById("modal");
+        const modalImg = document.getElementById("modalImg");
+
+        photoItems.forEach((item) => {
+          item.addEventListener("click", function () {
+            scrollPosition = window.pageYOffset;
+            const img = this.querySelector("img");
+            modalImg.src = img.src;
+            modal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+            isModalOpen = true;
+          });
+        });
+
+        // Fermer le modal
+        modal.addEventListener("click", function () {
+          modal.style.display = "none";
+          document.body.style.overflow = "auto";
+          window.scrollTo(0, scrollPosition);
+          isModalOpen = false;
+        });
+
+        // Gestion du bouton retour
+        const backArrow = document.getElementById("backArrow");
+        backArrow.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (isModalOpen) {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+            window.scrollTo(0, scrollPosition);
+            isModalOpen = false;
+          } else {
+            window.location.href = "index.html";
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

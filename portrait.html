@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portrait - Tristan Linder</title>
+    <style>
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Extralight-BF6618904107ccc.otf")
+          format("opentype");
+        font-weight: 200;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Light-BF66189040e6001.otf")
+          format("opentype");
+        font-weight: 300;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Regular-BF66189040b697b.otf")
+          format("opentype");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Bold-BF66189040400df.otf")
+          format("opentype");
+        font-weight: 700;
+        font-style: normal;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Rebond Grotesque", sans-serif;
+        font-weight: 200;
+        background: #fff;
+        overflow-x: hidden;
+      }
+
+      .back-arrow {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        width: 70px;
+        height: 70px;
+        cursor: pointer;
+        z-index: 5000;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .back-arrow::before {
+        display: none;
+      }
+      .back-arrow svg {
+        transition: transform 0.3s ease;
+      }
+      .back-arrow:hover svg {
+        transform: scale(1.15);
+      }
+      .back-arrow:hover .arrow-glow-group {
+        filter: url(#arrowGlowHover);
+      }
+
+      .page-container {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 120px 40px 100px;
+      }
+
+      /* Sous-catégorie label */
+      .sub-category-label {
+        font-size: 11px;
+        font-weight: 400;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #000;
+        margin-bottom: 50px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      /* Bloc projet */
+      .project-block {
+        margin-bottom: 90px;
+      }
+
+      .project-title {
+        font-size: 20px;
+        font-weight: 300;
+        color: #000;
+        margin-bottom: 25px;
+      }
+
+      .project-description {
+        font-size: 13px;
+        font-weight: 300;
+        line-height: 1.7;
+        color: #000;
+        max-width: 550px;
+        margin-top: 22px;
+      }
+
+      .project-separator {
+        width: 25px;
+        height: 1px;
+        background: #ddd;
+        margin: 70px 0;
+      }
+
+      /* Grilles photos adaptées */
+      .photos-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .photo-item {
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(30px);
+        transition:
+          opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1),
+          transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+        position: relative;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .photo-item.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .photo-item img {
+        width: 100%;
+        height: auto;
+        display: block;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+      }
+
+      .photo-dot {
+        position: absolute;
+        top: 0;
+        right: -10px;
+        width: 6px;
+        height: 6px;
+        background: black;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .photo-item:hover .photo-dot {
+        opacity: 0.5;
+      }
+
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: white;
+        z-index: 4000;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .modal img {
+        max-width: 90vw;
+        max-height: 80vh;
+        object-fit: contain;
+      }
+
+      .modal-controls {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        margin-top: 18px;
+        gap: 0;
+      }
+
+      .modal-nav {
+        cursor: pointer;
+        padding: 10px;
+        transition: opacity 0.2s ease;
+        justify-self: start;
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+        background: none;
+        border: none;
+        outline: none;
+        min-width: 48px;
+      }
+      .modal-nav:hover {
+        opacity: 0.6;
+      }
+      .modal-nav svg {
+        width: 24px;
+        height: 24px;
+      }
+
+      .modal-counter {
+        font-size: 14px;
+        font-weight: 300;
+        color: #000;
+        min-width: 40px;
+        text-align: center;
+        grid-column: 2;
+        justify-self: center;
+        display: block;
+      }
+
+      @media (max-width: 768px) {
+        .page-container {
+          padding: 100px 18px 60px;
+        }
+        .photos-row {
+          flex-direction: column;
+          gap: 12px;
+        }
+        .project-title {
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#" class="back-arrow" id="backArrow">
+      <svg
+        width="34"
+        height="36"
+        viewBox="0 0 34 36"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        overflow="visible"
+      >
+        <defs>
+          <filter id="arrowGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="5"
+              flood-color="black"
+              flood-opacity="0.85"
+            />
+          </filter>
+          <filter
+            id="arrowGlowHover"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="8"
+              flood-color="black"
+              flood-opacity="1"
+            />
+          </filter>
+        </defs>
+        <g class="arrow-glow-group" filter="url(#arrowGlow)">
+          <path
+            d="M31 18L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+          <path
+            d="M14 6L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+          <path
+            d="M14 30L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+        </g>
+      </svg>
+    </a>
+
+    <div class="page-container">
+      <!-- Follie — 3 photos -->
+      <div class="project-block">
+        <h3 class="project-title">Follie</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/4_follie/fou_1.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/4_follie/fou_2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/4_follie/fou_3.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Une série expressive où le sujet se libère de toute retenue. L'énergie
+          débordante et les expressions exagérées oscillent entre folie douce et
+          jeu théâtral.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Hilly — 3 photos -->
+      <div class="project-block">
+        <h3 class="project-title">Hilly</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/4_hilly/chilly1-2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/4_hilly/chilly2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/4_hilly/chilly3-2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Un portrait en mouvement, capturé entre rires et silences. La série
+          explore les nuances d'une personnalité vive, entre énergie brute et
+          moments de contemplation.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Padre — 3 photos -->
+      <div class="project-block">
+        <h3 class="project-title">Padre</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/3_padre/Padre_1.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/3_padre/Padre_2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/3_padre/Padre_3.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Portrait d'une figure paternelle, entre force et tendresse. Les rides
+          et les expressions racontent une histoire sans mots, celle d'une vie
+          vécue pleinement.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Cla — 1 photo -->
+      <div class="project-block">
+        <h3 class="project-title">Cla</h3>
+        <div class="photos-row" style="max-width: 420px">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/5_cla/i-Dmagazine.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Un portrait éditorial inspiré par l'esthétique magazine. Jeu de pose
+          et de regard, où le sujet devient acteur d'une narration visuelle
+          épurée.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Garazz — 3 photos -->
+      <div class="project-block">
+        <h3 class="project-title">Garazz</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/2_garazz/Garazz1.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/2_garazz/Garazz2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/2_garazz/Garazz_1.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Session portrait dans un garage transformé en studio éphémère. La
+          lumière brute et l'environnement industriel créent un contraste
+          saisissant avec la présence humaine.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Lele — 3 photos -->
+      <div class="project-block">
+        <h3 class="project-title">Lele</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/3_lele/lele_1.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/3_lele/lele_2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/3_lele/lele_3.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Portraits saisis dans un cadre naturel, où la lumière du jour
+          enveloppe le sujet d'une chaleur diffuse. Un exercice de spontanéité
+          et de confiance mutuelle devant l'objectif.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Dédé — 4 photos : 2+2 -->
+      <div class="project-block">
+        <h3 class="project-title">Dédé</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/1_d%C3%A9d%C3%A9/amore-1.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/1_d%C3%A9d%C3%A9/amore-2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/1_d%C3%A9d%C3%A9/amore-3.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/1_d%C3%A9d%C3%A9/amore-4.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Une série intime réalisée en lumière naturelle, explorant la tendresse
+          et la vulnérabilité d'un regard familier. Chaque cliché cherche à
+          capturer l'essence d'un lien profond, entre douceur et authenticité.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Lele II — 2 photos -->
+      <div class="project-block">
+        <h3 class="project-title">Lele II</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/6_lele_2/lele7.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_couleurs/6_lele_2/lele8.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Seconde session avec le même sujet, dans un contexte différent.
+          L'évolution du rapport photographe-modèle transparaît dans une aisance
+          plus naturelle.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- OG — 3 photos -->
+      <div class="project-block">
+        <h3 class="project-title">OG</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/1_og/og_chilly3.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/1_og/og_chilly4.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/1_og/og_chilly5.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Portraits en noir et blanc à l'ancienne, capturant l'essence brute du
+          sujet sans artifice. Le grain et les contrastes prononcés rappellent
+          une photographie intemporelle.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Chilly Nature — 3 photos -->
+      <div class="project-block">
+        <h3 class="project-title">Chilly Nature</h3>
+        <div class="photos-row">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/2_chilly%20nature/nature_1.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/2_chilly%20nature/nature_2.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/2_chilly%20nature/nature_3.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Un sujet plongé dans un décor naturel, où les textures organiques se
+          fondent avec la silhouette humaine. Le noir et blanc renforce cette
+          fusion.
+        </p>
+      </div>
+
+      <div class="project-separator"></div>
+
+      <!-- Grand-Père — 1 photo -->
+      <div class="project-block">
+        <h3 class="project-title">Grand-Père</h3>
+        <div class="photos-row" style="max-width: 380px">
+          <div class="photo-item">
+            <img
+              src="imagepro/portraits/portraits_noir_blanc/5_grand%20pere/grand-papa.jpg"
+              alt=""
+            />
+            <div class="photo-dot"></div>
+          </div>
+        </div>
+        <p class="project-description">
+          Un hommage silencieux en une seule image. Le portrait d'un grand-père,
+          capturé dans toute sa dignité, où chaque détail du visage porte le
+          poids d'une vie entière.
+        </p>
+      </div>
+    </div>
+
+    <div class="modal" id="modal">
+      <img id="modalImg" src="" alt="" />
+      <div class="modal-controls">
+        <div
+          class="modal-nav"
+          id="modalPrev"
+          style="grid-column: 1; justify-self: start"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16 4L8 12L16 20"
+              stroke="#333"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div
+          class="modal-counter"
+          id="modalCounter"
+          style="grid-column: 2; justify-self: center"
+        ></div>
+        <div
+          class="modal-nav"
+          id="modalNext"
+          style="grid-column: 3; justify-self: end"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 4L16 12L8 20"
+              stroke="#333"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        let scrollPosition = 0,
+          isModalOpen = false;
+        let currentProjectPhotos = [];
+        let currentPhotoIndex = 0;
+        const modal = document.getElementById("modal");
+        const modalImg = document.getElementById("modalImg");
+        const modalPrev = document.getElementById("modalPrev");
+        const modalNext = document.getElementById("modalNext");
+        const modalCounter = document.getElementById("modalCounter");
+        const backArrow = document.getElementById("backArrow");
+        const photoItems = document.querySelectorAll(".photo-item");
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1, rootMargin: "0px 0px -30px 0px" },
+        );
+        photoItems.forEach((item, i) => {
+          item.style.transitionDelay = (i % 3) * 0.1 + "s";
+          observer.observe(item);
+        });
+
+        function updateModalNav() {
+          modalCounter.style.display = "block";
+          modalCounter.textContent =
+            currentProjectPhotos.length > 0
+              ? currentPhotoIndex + 1 + "/" + currentProjectPhotos.length
+              : "";
+          // Flèches toujours visibles, mais désactivées si inutilisables
+          if (currentPhotoIndex > 0) {
+            modalPrev.style.opacity = "1";
+            modalPrev.style.pointerEvents = "auto";
+          } else {
+            modalPrev.style.opacity = "0.3";
+            modalPrev.style.pointerEvents = "none";
+          }
+          if (currentPhotoIndex < currentProjectPhotos.length - 1) {
+            modalNext.style.opacity = "1";
+            modalNext.style.pointerEvents = "auto";
+          } else {
+            modalNext.style.opacity = "0.3";
+            modalNext.style.pointerEvents = "none";
+          }
+        }
+
+        function showPhoto(index) {
+          currentPhotoIndex = index;
+          modalImg.src = currentProjectPhotos[index];
+          updateModalNav();
+        }
+
+        function closeModal() {
+          modal.style.display = "none";
+          document.body.style.overflow = "auto";
+          window.scrollTo(0, scrollPosition);
+          isModalOpen = false;
+        }
+
+        photoItems.forEach((item) => {
+          item.addEventListener("click", function () {
+            scrollPosition = window.pageYOffset;
+            const projectBlock = this.closest(".project-block");
+            const projectPhotos =
+              projectBlock.querySelectorAll(".photo-item img");
+            currentProjectPhotos = Array.from(projectPhotos).map(
+              (img) => img.src,
+            );
+            const clickedSrc = this.querySelector("img").src;
+            currentPhotoIndex = currentProjectPhotos.indexOf(clickedSrc);
+            modalImg.src = clickedSrc;
+            modal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+            isModalOpen = true;
+            updateModalNav();
+          });
+        });
+
+        modalPrev.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (currentPhotoIndex > 0) showPhoto(currentPhotoIndex - 1);
+        });
+        modalNext.addEventListener("click", function (e) {
+          e.stopPropagation();
+          if (currentPhotoIndex < currentProjectPhotos.length - 1)
+            showPhoto(currentPhotoIndex + 1);
+        });
+
+        modal.addEventListener("click", function (e) {
+          if (e.target === modal || e.target === modalImg) closeModal();
+        });
+
+        document.addEventListener("keydown", function (e) {
+          if (!isModalOpen) return;
+          if (e.key === "ArrowLeft" && currentPhotoIndex > 0) {
+            showPhoto(currentPhotoIndex - 1);
+          } else if (
+            e.key === "ArrowRight" &&
+            currentPhotoIndex < currentProjectPhotos.length - 1
+          ) {
+            showPhoto(currentPhotoIndex + 1);
+          } else if (e.key === "Escape") {
+            closeModal();
+          }
+        });
+
+        backArrow.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (isModalOpen) {
+            closeModal();
+          } else {
+            window.location.href = "index.html";
+          }
+        });
+
+        // Swipe tactile
+        let touchStartX = 0;
+        modal.addEventListener(
+          "touchstart",
+          function (e) {
+            touchStartX = e.changedTouches[0].screenX;
+          },
+          { passive: true },
+        );
+        modal.addEventListener(
+          "touchend",
+          function (e) {
+            const diff = e.changedTouches[0].screenX - touchStartX;
+            if (Math.abs(diff) > 50) {
+              if (
+                diff < 0 &&
+                currentPhotoIndex < currentProjectPhotos.length - 1
+              ) {
+                showPhoto(currentPhotoIndex + 1);
+              } else if (diff > 0 && currentPhotoIndex > 0) {
+                showPhoto(currentPhotoIndex - 1);
+              }
+            }
+          },
+          { passive: true },
+        );
+      });
+    </script>
+  </body>
+</html>

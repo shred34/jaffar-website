@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tristan Linder - Portfolio</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Navigation fixe -->
+    <div class="nav-fixed">
+      <a class="nav-item nav-artist" href="index.html">Tristan Linder</a>
+      <a class="nav-item" href="contact.html">Contact</a>
+    </div>
+
+    <!-- Container principal -->
+    <div class="main-container">
+      <!-- Navigation par points -->
+      <div class="navigation-dots" id="navigationDots">
+        <!-- Les points seront générés par JavaScript -->
+      </div>
+
+      <!-- Zone de scroll horizontal pleine largeur -->
+      <div class="projects-scroll-zone" id="projectsScrollZone">
+        <div class="projects-container" id="projectsContainer">
+          <!-- Les projets seront générés par JavaScript -->
+        </div>
+      </div>
+
+      <!-- Section bas avec dégradé -->
+      <div class="bottom-section" id="bottomSection">
+        <div class="scroll-arrow">
+          <svg
+            class="arrow-icon"
+            width="36"
+            height="34"
+            viewBox="0 0 36 34"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            overflow="visible"
+          >
+            <defs>
+              <filter
+                id="arrowGlow"
+                x="-150%"
+                y="-150%"
+                width="400%"
+                height="400%"
+              >
+                <feDropShadow
+                  dx="0"
+                  dy="0"
+                  stdDeviation="6"
+                  flood-color="black"
+                  flood-opacity="0.95"
+                />
+              </filter>
+              <filter
+                id="arrowGlowHover"
+                x="-150%"
+                y="-150%"
+                width="400%"
+                height="400%"
+              >
+                <feDropShadow
+                  dx="0"
+                  dy="0"
+                  stdDeviation="9"
+                  flood-color="black"
+                  flood-opacity="1"
+                />
+              </filter>
+            </defs>
+            <g class="arrow-glow-group" filter="url(#arrowGlow)">
+              <path
+                class="arrow-line arrow-line-left"
+                d="M6 20L18 31"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="square"
+              />
+              <path
+                class="arrow-line arrow-line-right"
+                d="M30 20L18 31"
+                stroke="white"
+                stroke-width="1.5"
+                stroke-linecap="square"
+              />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section scrollée avec vidéo -->
+    <div class="scrolled-section">
+      <div class="video-player">
+        <!-- Miniature de la vidéo -->
+        <div class="video-thumbnail" id="videoThumbnail">
+          <img
+            src="image/miniature.jpg"
+            alt="Miniature vidéo"
+            class="thumbnail-image"
+          />
+          <button class="play-button" id="playButton">▶</button>
+        </div>
+
+        <!-- Élément vidéo (caché initialement) -->
+        <video class="video-element" id="mainVideo" style="display: none">
+          <source src="image/jaffarvideo.mp4" type="video/mp4" />
+          Votre navigateur ne supporte pas la lecture vidéo.
+        </video>
+
+        <!-- Contrôles vidéo (cachés initialement) -->
+        <div class="video-controls" id="videoControls" style="display: none">
+          <button class="play-pause-btn" id="playPauseBtn">⏸</button>
+          <div class="timeline" id="timeline">
+            <div class="timeline-filled" id="timelineFilled"></div>
+          </div>
+          <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+          <button class="fullscreen-btn" id="fullscreenBtn">⛶</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="sketch.js"></script>
+  </body>
+</html>

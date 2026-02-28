@@ -1,0 +1,900 @@
+/* Rebond Grotesque - polices locales */
+@font-face {
+    font-family: 'Rebond Grotesque';
+    src: url('type/ESRebondGrotesqueTRIAL-Extralight-BF6618904107ccc.otf') format('opentype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Rebond Grotesque';
+    src: url('type/ESRebondGrotesqueTRIAL-Light-BF66189040e6001.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Rebond Grotesque';
+    src: url('type/ESRebondGrotesqueTRIAL-Regular-BF66189040b697b.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Rebond Grotesque';
+    src: url('type/ESRebondGrotesqueTRIAL-Bold-BF66189040400df.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* Reset et base */
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Rebond Grotesque', sans-serif;
+    font-weight: 200;
+    background: #000;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    height: 120vh;
+}
+
+/* Empêcher le sur-scroll qui crée des barres blanches */
+html {
+    overscroll-behavior: none;
+}
+
+body {
+    overscroll-behavior: none;
+    height: 120vh;
+}
+
+/* Navigation fixe avec transition de couleur, z-index élevé et TOUJOURS CLIQUABLE */
+.nav-fixed {
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    width: calc(100% - 40px) !important;
+    z-index: 10000050 !important;
+    color: #333;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    font-family: 'Rebond Grotesque', sans-serif;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+}
+
+.nav-item {
+    cursor: pointer !important;
+    transition: text-decoration 0.3s ease;
+    font-weight: 400;
+    letter-spacing: 0.8px;
+    pointer-events: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    position: relative !important;
+    z-index: 10000050 !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+.nav-item:hover {
+    color: inherit !important;
+    text-decoration: underline !important;
+    font-weight: 400 !important;
+}
+
+.nav-artist {
+    font-weight: 400;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+/* Container principal avec dégradé de base */
+.main-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: linear-gradient(to bottom, 
+        #f8f8f8 0%, 
+        #f8f8f8 86%, 
+        #f6f6f6 92%, 
+        #f0f0f0 96%, 
+        #e8e8e8 98%, 
+        #000 100%);
+    transition: background 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Overlay pour le dégradé qui passe PAR-DESSUS le carousel */
+.main-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 150;
+    pointer-events: none;
+    transition: background 0.3s ease;
+}
+
+/* Indicateur de drag - Texte blanc avec lueur noire - RESTE EN INTER */
+.drag-hint {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 15px;
+    z-index: 250;
+    opacity: 0;
+    transition: opacity 0.3s ease, text-shadow 0.8s ease;
+    pointer-events: none;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    background: transparent;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+/* Navigation par points - avec transition d'opacité */
+.navigation-dots {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 999998;
+    padding: 25px 30px;
+    user-select: none;
+    transition: opacity 0.3s ease;
+    pointer-events: auto;
+}
+
+.nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(200, 200, 200, 0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+}
+
+/* Zone cliquable FINE horizontalement, HAUTE verticalement */
+.nav-dot::after {
+    content: '';
+    position: absolute;
+    top: -25px;
+    bottom: -25px;
+    left: -8px;
+    right: -8px;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+/* Points des EXTRÉMITÉS : zone élargie sur les côtés */
+.nav-dot:first-child::after {
+    left: -15px;
+    right: -8px;
+}
+
+.nav-dot:last-child::after {
+    left: -8px;
+    right: -15px;
+}
+
+.nav-dot:hover {
+    background: rgba(136, 136, 136, 0.9);
+    transform: scale(1.15);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+}
+
+.nav-dot.active {
+    background: rgba(51, 51, 51, 0.95);
+    transform: scale(1.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.nav-dot.dragging {
+    transform: scale(1.4);
+    z-index: 1000;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Zone de scroll horizontal pleine largeur */
+.projects-scroll-zone {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100vw;
+    height: 450px;
+    transform: translateY(-50%);
+    overflow: hidden;
+    perspective: 1000px;
+}
+
+.projects-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    transition: none;
+}
+
+.project-item {
+    position: absolute;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-style: preserve-3d;
+}
+
+/* États des projets selon leur position - effet 3D */
+.project-item.center {
+    transform: translateX(0) translateZ(0) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+    z-index: 100;
+}
+
+.project-item.left {
+    transform: translateX(-400px) translateZ(-100px) scale(0.8);
+    opacity: 0.7;
+    filter: blur(1.5px);
+    z-index: 50;
+}
+
+.project-item.right {
+    transform: translateX(400px) translateZ(-100px) scale(0.8);
+    opacity: 0.7;
+    filter: blur(1.5px);
+    z-index: 50;
+}
+
+.project-item.far-left {
+    transform: translateX(-600px) translateZ(-200px) scale(0.6);
+    opacity: 0.3;
+    filter: blur(3px);
+    z-index: 10;
+}
+
+.project-item.far-right {
+    transform: translateX(600px) translateZ(-200px) scale(0.6);
+    opacity: 0.3;
+    filter: blur(3px);
+    z-index: 10;
+}
+
+.project-item.hidden {
+    transform: translateX(0) translateZ(-300px) scale(0.4);
+    opacity: 0;
+    filter: blur(5px);
+    z-index: 1;
+}
+
+/* Hover du projet central */
+.project-item.center:hover {
+    transform: translateX(0) translateZ(20px) scale(1.05);
+}
+
+.project-item.center:hover .project-title {
+    font-size: 22px;
+    font-weight: 400;
+}
+
+.project-image {
+    width: 380px;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    background: #ddd;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.project-title {
+    font-size: 18px;
+    color: #333;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.project-subtitle {
+    font-size: 12px;
+    color: #888;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+    margin-top: 2px;
+    font-family: 'Rebond Grotesque', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.bottom-section {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    transition: opacity 0.1s ease;
+    z-index: 200;
+}
+
+@keyframes arrowSlideDown {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-300px);
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+@keyframes arrowSlideUp {
+    0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    70% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-300px);
+    }
+}
+
+.bottom-section.arrow-entering {
+    animation: arrowSlideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.bottom-section.arrow-leaving {
+    animation: arrowSlideUp 0.5s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+/* Flèche SVG custom — design éditorial */
+.scroll-arrow {
+    cursor: pointer;
+    padding: 12px;
+}
+
+.scroll-arrow .arrow-icon {
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.scroll-arrow:hover .arrow-icon {
+    transform: scale(1.15);
+}
+
+.scroll-arrow:hover .arrow-glow-group {
+    filter: url(#arrowGlowHover);
+}
+
+@keyframes arrowFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(10px);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-15px);
+    }
+    60% {
+        transform: translateY(-8px);
+    }
+}
+
+/* Section vidéo qui apparaît avec le noir - Z-INDEX MAXIMUM */
+.scrolled-section {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 100% !important;
+    height: 100vh !important;
+    background: transparent !important;
+    display: none !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 60px 20px !important;
+    z-index: 9999 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Vidéo au-dessus de TOUT */
+.video-player {
+    width: 900px !important;
+    max-width: 90vw !important;
+    background: #000 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    margin: 0 auto !important;
+    z-index: 10000 !important;
+    aspect-ratio: 16 / 9 !important;
+}
+
+/* Lecteur vidéo avec miniature */
+.video-player {
+    width: 900px;
+    max-width: 90vw;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+}
+
+/* Miniature de la vidéo */
+.video-thumbnail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* Bouton play centré sur la miniature */
+.play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* circular white background which scales with the video */
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    /* slightly smaller circular button to match user's preference */
+    width: clamp(40px, 7.5vw, 64px);
+    height: clamp(40px, 7.5vw, 64px);
+    cursor: pointer;
+    /* no hover animation: keep triangle always visible and fixed */
+    transition: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+    /* Use an inline SVG as background for a perfectly centered, scalable triangle */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'><path d='M8 5v14l11-7z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: center;
+    /* size the triangle a bit larger so it appears stronger inside the circle */
+    background-size: 64% auto;
+    /* Hide any textual content inside the button (e.g. '▶') so only the SVG background is visible */
+    font-size: 0;
+    color: transparent;
+}
+
+.play-button:hover {
+    /* intentionally empty: no visual change on hover */
+    transform: translate(-50%, -50%);
+}
+
+/* Triangle de play au centre */
+.play-button::before {
+    /* removed: replaced by background SVG for reliable centering and scaling */
+    display: none !important;
+}
+
+/* Élément vidéo */
+.video-element {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Contrôles vidéo */
+.video-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-sizing: border-box;
+}
+
+.video-player:hover .video-controls {
+    opacity: 1;
+}
+
+.play-pause-btn, .fullscreen-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    min-width: 40px;
+}
+
+.play-pause-btn:hover, .fullscreen-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.timeline {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    margin: 0 10px;
+}
+
+.timeline-filled {
+    height: 100%;
+    background: #fff;
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.1s;
+}
+
+.time-display {
+    color: white;
+    font-size: 14px;
+    font-weight: 400;
+    min-width: 100px;
+    text-align: right;
+}
+
+/* Pages secondaires */
+.page {
+    display: none;
+    width: 100vw;
+    min-height: 100vh;
+    background: #fff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    overflow-y: auto;
+}
+
+.page.active {
+    display: block;
+}
+
+.back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: 2px solid #333;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    z-index: 3000;
+}
+
+.back-button:hover {
+    background: #333;
+    color: white;
+}
+
+/* Page biographie */
+.bio-page {
+    padding: 80px 40px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.8;
+}
+
+.bio-title {
+    font-size: 36px;
+    font-weight: 400;
+    color: #333;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.bio-content {
+    font-size: 16px;
+    color: #555;
+    font-weight: 400;
+    line-height: 1.8;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.bio-content p {
+    margin-bottom: 20px;
+}
+
+/* Page contact */
+.contact-page {
+    padding: 80px 40px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.contact-title {
+    font-size: 36px;
+    font-weight: 400;
+    color: #333;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+    text-align: center;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.contact-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.contact-item {
+    text-align: center;
+}
+
+.contact-item h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.contact-item a {
+    font-size: 16px;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: block;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.contact-item a:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+.contact-form {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.contact-form h3 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 25px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: 'Rebond Grotesque', sans-serif;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #333;
+    box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.send-button {
+    width: 100%;
+    background: #333;
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.send-button:hover {
+    background: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Pages projets */
+.project-page {
+    padding: 80px 20px 20px;
+}
+
+.project-title-page {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 400;
+    color: #333;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+    font-family: 'Rebond Grotesque', sans-serif;
+}
+
+.project-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.gallery-image {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #ddd;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-image:hover {
+    transform: scale(1.02);
+}
+
+/* Responsive */
+/* Responsive (<=1200px) — carousel fixed: removed shrinking rules to keep carousel size stable */
+
+
+@media (max-width: 768px) {
+    /* Keep video/player and layout adjustments for small screens,
+       but remove rules that forcibly shrink the carousel elements.
+       The carousel will now keep its intended dimensions. */
+
+    .video-player {
+        width: 95vw;
+    }
+
+    .project-gallery {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .play-button {
+        width: 60px;
+        height: 60px;
+        /* keep textual content hidden on small screens too */
+        font-size: 0;
+    }
+
+    .play-button::before {
+        /* ensure pseudo-element can't reappear on mobile */
+        display: none !important;
+    }
+
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .contact-page {
+        padding: 80px 20px 40px;
+    }
+
+    .bio-page {
+        padding: 80px 20px 40px;
+    }
+}
+
+/* Note: Removed the previous override block. The problematic responsive
+   rules that resized the carousel were deleted so the carousel keeps
+   its intended layout. If you prefer a different fixed size, we can
+   introduce CSS variables for easier tuning. */
+
+/* Optimisations pour les performances */
+.project-item, .nav-dot, .scroll-arrow, .drag-hint {
+    will-change: transform, opacity;
+}
+
+.main-container {
+    will-change: background;
+}
+
+/* Prévention des sélections de texte accidentelles */
+.projects-container,
+.project-item,
+.navigation-dots,
+.bottom-section,
+.drag-hint {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none; 
+    -ms-user-select: none;
+} 

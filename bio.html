@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biographie - Tristan Linder</title>
+    <style>
+      /* Rebond Grotesque locale */
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Extralight-BF6618904107ccc.otf")
+          format("opentype");
+        font-weight: 200;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Light-BF66189040e6001.otf")
+          format("opentype");
+        font-weight: 300;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Regular-BF66189040b697b.otf")
+          format("opentype");
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Rebond Grotesque";
+        src: url("type/ESRebondGrotesqueTRIAL-Bold-BF66189040400df.otf")
+          format("opentype");
+        font-weight: 700;
+        font-style: normal;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Rebond Grotesque", sans-serif;
+        font-weight: 200;
+        background: #f8f8f8;
+        overflow-x: hidden;
+      }
+
+      /* Back arrow (same style as project pages) */
+      .back-arrow {
+        position: fixed;
+        /* fixed position matching header on index (aligned with Tristan Linder) */
+        top: 20px;
+        left: 20px;
+        width: 70px;
+        height: 70px;
+        cursor: pointer;
+        z-index: 5000;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .back-arrow::before {
+        display: none;
+      }
+
+      .back-arrow svg {
+        transition: transform 0.3s ease;
+      }
+
+      .back-arrow:hover svg {
+        transform: scale(1.15);
+      }
+
+      .back-arrow:hover .arrow-glow-group {
+        filter: url(#arrowGlowHover);
+      }
+
+      @keyframes floatH {
+        0%,
+        100% {
+          transform: translateX(0px);
+        }
+        50% {
+          transform: translateX(-6px);
+        }
+      }
+
+      .bio-page {
+        padding: 140px 40px 80px;
+        max-width: 600px;
+        margin: 0 auto;
+        min-height: 100vh;
+      }
+
+      .bio-photo {
+        width: 100%;
+        margin-bottom: 40px;
+      }
+
+      .bio-photo img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .bio-content {
+        font-size: 17px;
+        color: #444;
+        font-weight: 200;
+        line-height: 1.9;
+      }
+
+      @media (max-width: 768px) {
+        .bio-page {
+          padding: 140px 20px 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="index.html" class="back-arrow" id="backArrow"
+      ><svg
+        width="34"
+        height="36"
+        viewBox="0 0 34 36"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        overflow="visible"
+      >
+        <defs>
+          <filter id="arrowGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="5"
+              flood-color="black"
+              flood-opacity="0.85"
+            />
+          </filter>
+          <filter
+            id="arrowGlowHover"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="8"
+              flood-color="black"
+              flood-opacity="1"
+            />
+          </filter>
+        </defs>
+        <g class="arrow-glow-group" filter="url(#arrowGlow)">
+          <path
+            d="M31 18L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+          <path
+            d="M14 6L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+          <path
+            d="M14 30L5 18"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+        </g></svg
+    ></a>
+
+    <div class="bio-page">
+      <div class="bio-photo">
+        <img src="image/bio.jpg" alt="Tristan Adriel Linder" />
+      </div>
+      <div class="bio-content">
+        <p>
+          Tristan Adriel Linder, à peu près lausannois, a découvert la
+          photographie à l'occasion de voyages touristiques avec ses parents.
+          Depuis, il explore les aspects manuels de cette pratique dans le but
+          de se reconnecter à l'instant et à lui-même.
+        </p>
+        <p>
+          Pour en apprendre davantage sur son univers personnel, le portrait en
+          natures mortes révèle, à travers les objets qui l'habitent, ce que les
+          mots ne sauraient dire.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
