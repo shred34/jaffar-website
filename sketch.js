@@ -1,5 +1,5 @@
 // Variables globales
-let currentProjectIndex = 0;
+let currentProjectIndex = 2;
 let projects = [];
 
 // Configuration des projets (l'ordre détermine la disposition dans le carousel)
@@ -85,11 +85,11 @@ let arrowWasHidden = false;
 
 // Constantes de configuration
 const MOBILE_SEQUENCE_TIMING = {
-  ARROW_DISPLAY: 2000,    // Durée d'affichage de la flèche (ms)
-  MESSAGE_DISPLAY: 2000,   // Durée d'affichage du message (ms)
-  FADE_TRANSITION: 300,    // Durée des transitions fade (ms)
-  INIT_DELAY: 500,         // Délai avant démarrage séquence (ms)
-  TRANSITION_DELAY: 100    // Délai entre flèche et message (ms)
+  ARROW_DISPLAY: 2000, // Durée d'affichage de la flèche (ms)
+  MESSAGE_DISPLAY: 2000, // Durée d'affichage du message (ms)
+  FADE_TRANSITION: 300, // Durée des transitions fade (ms)
+  INIT_DELAY: 500, // Délai avant démarrage séquence (ms)
+  TRANSITION_DELAY: 100, // Délai entre flèche et message (ms)
 };
 
 // Fonctions utilitaires
@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
   setupNavigationClicks();
   updateProjectsDisplay();
-  
+
   // Sur mobile : lancer la séquence flèche → message → flèche
   // Sur desktop : afficher le message drag normal
   if (isMobileDevice()) {
@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     createDragHint();
   }
-  
+
   createMiniArrows();
   setupVideoPlayer();
   setupMouseTracking();
@@ -506,7 +506,7 @@ function createProjects() {
     projectsContainer.appendChild(projectElement);
   });
 
-  currentProjectIndex = projectsData.length;
+  currentProjectIndex = projectsData.length + 2;
 }
 
 function createNavigationDots() {
@@ -1015,9 +1015,9 @@ function prevProjectInfinite() {
 // Annuler la séquence mobile en cours
 function cancelMobileSequence() {
   mobileSequenceActive = false;
-  mobileSequenceTimeouts.forEach(timeout => clearTimeout(timeout));
+  mobileSequenceTimeouts.forEach((timeout) => clearTimeout(timeout));
   mobileSequenceTimeouts = [];
-  
+
   if (dragHint) {
     clearTimeout(hintTimeout);
     hideHint();
@@ -1028,48 +1028,48 @@ function cancelMobileSequence() {
 // SANS animation de montée (fade in/out simple)
 function startMobileReturnSequence() {
   if (!isMobileDevice()) return;
-  
+
   // Annuler toute séquence en cours
   cancelMobileSequence();
   mobileSequenceActive = true;
-  
+
   // ÉTAPE 1 : Afficher la flèche - FADE IN simple
   positionElementAtBottom(bottomSection);
   bottomSection.style.transition = `opacity ${MOBILE_SEQUENCE_TIMING.FADE_TRANSITION}ms ease`;
   bottomSection.style.opacity = 1;
   arrowWasHidden = false;
-  
+
   // ÉTAPE 2 : Après délai, cacher la flèche (fade out)
   const timeout1 = setTimeout(() => {
     if (!mobileSequenceActive) return;
-    
+
     bottomSection.style.transition = `opacity ${MOBILE_SEQUENCE_TIMING.FADE_TRANSITION}ms ease`;
     bottomSection.style.opacity = 0;
     arrowWasHidden = true;
-    
+
     // ÉTAPE 3 : Après le fade out, afficher le message
     const timeout2 = setTimeout(() => {
       if (!mobileSequenceActive) return;
-      
+
       createDragHintWithDuration(MOBILE_SEQUENCE_TIMING.MESSAGE_DISPLAY);
-      
+
       // ÉTAPE 4 : Après durée message, le message disparaît et la flèche revient
       const timeout3 = setTimeout(() => {
         if (!mobileSequenceActive) return;
-        
+
         if (dragHint) {
           hideHint();
         }
-        
+
         mobileSequenceActive = false;
       }, MOBILE_SEQUENCE_TIMING.MESSAGE_DISPLAY);
-      
+
       mobileSequenceTimeouts.push(timeout3);
     }, MOBILE_SEQUENCE_TIMING.TRANSITION_DELAY);
-    
+
     mobileSequenceTimeouts.push(timeout2);
   }, MOBILE_SEQUENCE_TIMING.ARROW_DISPLAY);
-  
+
   mobileSequenceTimeouts.push(timeout1);
 }
 
@@ -1138,7 +1138,7 @@ function handleVerticalScroll() {
       // Sortir de la fonction pour éviter l'animation de sortie de la flèche
       return;
     }
-    
+
     // On commence à scroller vers le bas → lancer l'animation de sortie
     bottomSection.classList.remove("arrow-entering");
     bottomSection.style.opacity = "";
@@ -1156,12 +1156,12 @@ function handleVerticalScroll() {
     // On est revenu tout en haut → lancer l'animation d'entrée
     // MAIS : ne pas interférer avec la séquence mobile
     const dragHintExists = !!dragHint;
-    
+
     // Ne rien faire si la séquence mobile est en cours
     if (isMobile && mobileSequenceActive) {
       return;
     }
-    
+
     if (!isMobile || !dragHintExists) {
       bottomSection.classList.remove("arrow-leaving");
       arrowWasHidden = false;
@@ -1174,7 +1174,9 @@ function handleVerticalScroll() {
         bottomSection.style.transform = "translateX(-50%)";
         bottomSection.removeEventListener("animationend", onEnterEnd);
       };
-      bottomSection.addEventListener("animationend", onEnterEnd, { once: true });
+      bottomSection.addEventListener("animationend", onEnterEnd, {
+        once: true,
+      });
     }
   } else if (scrollProgress > 0.15 && !isLeaving) {
     // Sécurité : bien au-delà du seuil, forcer caché
