@@ -327,11 +327,6 @@ function hideArrows() {
 }
 
 function createDragHintWithDuration(duration) {
-  // Ne pas afficher le message sur mobile
-  if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
-    return;
-  }
-
   dragHint = document.createElement("div");
   dragHint.className = "drag-hint";
   dragHint.textContent = "Maintenez appuyé et faites glisser horizontalement";
@@ -354,7 +349,26 @@ function createDragHintWithDuration(duration) {
     background: transparent;
   `;
 
-  mainContainer.appendChild(dragHint);
+  // Sur mobile, positionner dynamiquement le message drag en bas (au-dessus de la barre de recherche si présente)
+  if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+    let bottomPx = 24;
+    if (window.visualViewport) {
+      const viewportHeight = window.visualViewport.height;
+      const windowHeight = window.innerHeight;
+      bottomPx = windowHeight - viewportHeight + 24;
+      if (bottomPx < 24) bottomPx = 24;
+    }
+    dragHint.style.position = "fixed";
+    dragHint.style.left = "50%";
+    dragHint.style.transform = "translateX(-50%)";
+    dragHint.style.bottom = bottomPx + "px";
+    dragHint.style.zIndex = 250;
+    // Cacher la flèche verticale tant que le message drag est visible
+    if (bottomSection) bottomSection.style.opacity = 0;
+    document.body.appendChild(dragHint);
+  } else {
+    mainContainer.appendChild(dragHint);
+  }
 
   setTimeout(() => {
     dragHint.style.opacity = "1";
@@ -383,7 +397,55 @@ function hideHint() {
         dragHint.parentNode.removeChild(dragHint);
         dragHint = null;
       }
+      // Sur mobile, afficher la flèche verticale après disparition du message drag, mais uniquement si on est en haut de la page
+      if (
+        window.matchMedia &&
+        window.matchMedia("(pointer: coarse)").matches &&
+        bottomSection
+      ) {
+        // Vérifie qu'on est bien en haut de la page (scrollProgress < 0.1)
+        const scrollTop =
+          window.pageYOffset || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+        const scrollProgress = Math.min(scrollTop / (windowHeight * 0.2), 1);
+        if (scrollProgress < 0.1) {
+          if (window.visualViewport) {
+            let bottomPx = 60;
+            const viewportHeight = window.visualViewport.height;
+            const windowHeight2 = window.innerHeight;
+            bottomPx = windowHeight2 - viewportHeight + 24;
+            if (bottomPx < 24) bottomPx = 24;
+            bottomSection.style.position = "fixed";
+            bottomSection.style.left = "50%";
+            bottomSection.style.transform = "translateX(-50%)";
+            bottomSection.style.bottom = bottomPx + "px";
+          }
+          bottomSection.style.opacity = 1;
+        } else {
+          bottomSection.style.opacity = 0;
+        }
+      }
     }, 200);
+  } else {
+    // Cas rare : dragHint déjà supprimé, mais on veut forcer l'affichage de la flèche sur mobile
+    if (
+      window.matchMedia &&
+      window.matchMedia("(pointer: coarse)").matches &&
+      bottomSection
+    ) {
+      if (window.visualViewport) {
+        let bottomPx = 60;
+        const viewportHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        bottomPx = windowHeight - viewportHeight + 24;
+        if (bottomPx < 24) bottomPx = 24;
+        bottomSection.style.position = "fixed";
+        bottomSection.style.left = "50%";
+        bottomSection.style.transform = "translateX(-50%)";
+        bottomSection.style.bottom = bottomPx + "px";
+      }
+      bottomSection.style.opacity = 1;
+    }
   }
 }
 
@@ -870,13 +932,7 @@ function setupGlobalDrag() {
     }
   });
 
-  // Touch events - avec distinction swipe rapide vs drag long
-  let touchStartTime = 0;
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let isLongPress = false;
-  let swipeDetected = false;
-
+  // Touch events
   document.addEventListener(
     "touchstart",
     function (e) {
@@ -895,14 +951,9 @@ function setupGlobalDrag() {
         return;
       }
 
-      touchStartTime = Date.now();
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      startX = e.touches[0].clientX;
       isDragging = true;
-      isLongPress = false;
-      swipeDetected = false;
-      isDraggingGlobal = false;
+      isDraggingGlobal = true;
+      startX = e.touches[0].clientX;
 
       if (dragHint) {
         clearTimeout(hintTimeout);
@@ -917,57 +968,19 @@ function setupGlobalDrag() {
     function (e) {
       if (!isDragging) return;
 
-      const touchDuration = Date.now() - touchStartTime;
-      const deltaX = e.touches[0].clientX - touchStartX;
-      const deltaY = e.touches[0].clientY - touchStartY;
-      
-      // Détecter si le mouvement est principalement horizontal
-      const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY) * 1.5;
-      
-      if (!isHorizontalSwipe) return;
+      const deltaX = e.touches[0].clientX - startX;
+      const sensitivity = 30;
 
-      // SWIPE RAPIDE : touch court + mouvement rapide = navigation 1 par 1
-      if (touchDuration < 200 && !isLongPress && !swipeDetected) {
-        const swipeThreshold = 50;
-        
-        if (Math.abs(deltaX) > swipeThreshold) {
-          e.preventDefault();
-          swipeDetected = true;
-          
-          // Navigation d'un seul projet
-          const realIndex = getCurrentRealProjectIndex();
-          if (deltaX > 0) {
-            // Swipe vers la droite = projet précédent
-            const prevIndex = (realIndex - 1 + projectsData.length) % projectsData.length;
-            goToProject(prevIndex);
-          } else {
-            // Swipe vers la gauche = projet suivant
-            const nextIndex = (realIndex + 1) % projectsData.length;
-            goToProject(nextIndex);
-          }
-        }
-      }
-      // DRAG LONG : touch long + mouvement = rotation libre
-      else if (touchDuration >= 200 || isLongPress) {
-        if (!isLongPress) {
-          isLongPress = true;
-          isDraggingGlobal = true;
+      if (Math.abs(deltaX) > sensitivity) {
+        e.preventDefault();
+
+        if (deltaX > 0) {
+          prevProjectInfinite();
+        } else {
+          nextProjectInfinite();
         }
 
-        const currentDeltaX = e.touches[0].clientX - startX;
-        const sensitivity = 30;
-
-        if (Math.abs(currentDeltaX) > sensitivity) {
-          e.preventDefault();
-
-          if (currentDeltaX > 0) {
-            prevProjectInfinite();
-          } else {
-            nextProjectInfinite();
-          }
-
-          startX = e.touches[0].clientX;
-        }
+        startX = e.touches[0].clientX;
       }
     },
     { passive: false },
@@ -977,8 +990,6 @@ function setupGlobalDrag() {
     if (isDragging) {
       isDragging = false;
       isDraggingGlobal = false;
-      isLongPress = false;
-      swipeDetected = false;
     }
   });
 }
