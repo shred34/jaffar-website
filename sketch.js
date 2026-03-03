@@ -76,6 +76,10 @@ let dragHint,
   hintTimeout,
   hasScrolledDown = false;
 
+// Séquence mobile : flèche → message → flèche
+let mobileSequenceActive = false;
+let mobileSequenceTimeouts = [];
+
 // Variables mini-flèches - SIMPLE
 let isDraggingGlobal = false;
 
@@ -1066,13 +1070,108 @@ function prevProjectInfinite() {
   updateActiveDot();
 }
 
+// Annuler la séquence mobile en cours
+function cancelMobileSequence() {
+  mobileSequenceActive = false;
+  mobileSequenceTimeouts.forEach(timeout => clearTimeout(timeout));
+  mobileSequenceTimeouts = [];
+  
+  if (dragHint) {
+    clearTimeout(hintTimeout);
+    hideHint();
+  }
+}
+
+// Séquence sur mobile : flèche → message → flèche (jamais les 2 ensemble)
+function startMobileReturnSequence() {
+  const isMobile = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  if (!isMobile) return;
+  
+  // Annuler toute séquence en cours
+  cancelMobileSequence();
+  mobileSequenceActive = true;
+  
+  // ÉTAPE 1 : Afficher la flèche (3 secondes)
+  arrowWasHidden = true; // Pour déclencher l'animation d'entrée
+  bottomSection.classList.remove("arrow-leaving");
+  bottomSection.style.opacity = "";
+  bottomSection.style.transform = "";
+  bottomSection.classList.add("arrow-entering");
+  
+  if (window.visualViewport) {
+    let bottomPx = 60;
+    const viewportHeight = window.visualViewport.height;
+    const windowHeight = window.innerHeight;
+    bottomPx = windowHeight - viewportHeight + 24;
+    if (bottomPx < 24) bottomPx = 24;
+    bottomSection.style.position = "fixed";
+    bottomSection.style.left = "50%";
+    bottomSection.style.bottom = bottomPx + "px";
+  }
+  
+  const onEnterEnd = () => {
+    bottomSection.classList.remove("arrow-entering");
+    bottomSection.style.opacity = 1;
+    bottomSection.style.transform = "translateX(-50%)";
+    arrowWasHidden = false;
+    bottomSection.removeEventListener("animationend", onEnterEnd);
+  };
+  bottomSection.addEventListener("animationend", onEnterEnd, { once: true });
+  
+  // ÉTAPE 2 : Après 3s, cacher la flèche
+  const timeout1 = setTimeout(() => {
+    if (!mobileSequenceActive) return;
+    
+    bottomSection.classList.remove("arrow-entering");
+    bottomSection.classList.add("arrow-leaving");
+    const onLeaveEnd = () => {
+      bottomSection.classList.remove("arrow-leaving");
+      bottomSection.style.opacity = 0;
+      arrowWasHidden = true;
+      bottomSection.removeEventListener("animationend", onLeaveEnd);
+    };
+    bottomSection.addEventListener("animationend", onLeaveEnd, { once: true });
+    
+    // ÉTAPE 3 : Après la sortie de la flèche, afficher le message (2s)
+    const timeout2 = setTimeout(() => {
+      if (!mobileSequenceActive) return;
+      
+      createDragHintWithDuration(2000);
+      
+      // ÉTAPE 4 : Après 2s, le message disparaît et la flèche revient
+      const timeout3 = setTimeout(() => {
+        if (!mobileSequenceActive) return;
+        
+        // Le hideHint va déjà gérer la réapparition de la flèche
+        if (dragHint) {
+          hideHint();
+        }
+        
+        mobileSequenceActive = false;
+      }, 2000);
+      
+      mobileSequenceTimeouts.push(timeout3);
+    }, 500); // 500ms après la sortie de la flèche
+    
+    mobileSequenceTimeouts.push(timeout2);
+  }, 3000); // Flèche visible pendant 3s
+  
+  mobileSequenceTimeouts.push(timeout1);
+}
+
 function handleVerticalScroll() {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   const windowHeight = window.innerHeight;
   const scrollProgress = Math.min(scrollTop / (windowHeight * 0.2), 1);
+  const isMobile = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
 
   if (scrollTop > 2 && !hasScrolledDown) {
     hasScrolledDown = true;
+
+    // Annuler la séquence mobile si en cours
+    if (isMobile && mobileSequenceActive) {
+      cancelMobileSequence();
+    }
 
     if (dragHint) {
       clearTimeout(hintTimeout);
@@ -1081,11 +1180,19 @@ function handleVerticalScroll() {
   } else if (scrollTop <= 2 && hasScrolledDown) {
     hasScrolledDown = false;
 
-    setTimeout(() => {
-      if (!dragHint) {
-        createDragHintWithDuration(3000); // Ceci va aussi afficher les flèches
-      }
-    }, 200);
+    if (isMobile) {
+      // Sur mobile : séquence flèche → message → flèche
+      setTimeout(() => {
+        startMobileReturnSequence();
+      }, 200);
+    } else {
+      // Sur desktop : message normal
+      setTimeout(() => {
+        if (!dragHint) {
+          createDragHintWithDuration(3000); // Ceci va aussi afficher les flèches
+        }
+      }, 200);
+    }
   }
 
   const currentScrollTop = scrollTop;
@@ -1095,8 +1202,7 @@ function handleVerticalScroll() {
 
   updateGradientOnScroll(scrollProgress);
 
-  const prefersCoarsePointer =
-    window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  const prefersCoarsePointer = isMobile;
 
   // --- Gestion de la flèche avec animations symétriques ---
   const isEntering = bottomSection.classList.contains("arrow-entering");
@@ -1104,6 +1210,22 @@ function handleVerticalScroll() {
   const arrowIsVisible = !arrowWasHidden;
 
   if (scrollProgress > 0.01 && (arrowIsVisible || isEntering) && !isLeaving) {
+    // Sur mobile : si on scroll pendant que le message est visible, le cacher et afficher la flèche
+    if (isMobile && dragHint) {
+      clearTimeout(hintTimeout);
+      if (dragHint && dragHint.parentNode) {
+        dragHint.parentNode.removeChild(dragHint);
+        dragHint = null;
+      }
+      cancelMobileSequence();
+      
+      // Afficher la flèche pour l'animation de sortie
+      arrowWasHidden = false;
+      bottomSection.classList.remove("arrow-entering");
+      bottomSection.style.opacity = 1;
+      bottomSection.style.transform = "translateX(-50%)";
+    }
+    
     // On commence à scroller vers le bas → lancer l'animation de sortie
     bottomSection.classList.remove("arrow-entering");
     bottomSection.style.opacity = "";
@@ -1119,9 +1241,13 @@ function handleVerticalScroll() {
     bottomSection.addEventListener("animationend", onLeaveEnd, { once: true });
   } else if (scrollProgress <= 0.01 && arrowWasHidden && !isEntering) {
     // On est revenu tout en haut → lancer l'animation d'entrée
-    // MAIS sur mobile, ne pas afficher la flèche si le dragHint est visible
-    const isMobile = prefersCoarsePointer;
+    // MAIS : ne pas interférer avec la séquence mobile
     const dragHintExists = !!dragHint;
+    
+    // Ne rien faire si la séquence mobile est en cours
+    if (isMobile && mobileSequenceActive) {
+      return;
+    }
     
     if (!isMobile || !dragHintExists) {
       bottomSection.classList.remove("arrow-leaving");
@@ -1139,6 +1265,9 @@ function handleVerticalScroll() {
     }
   } else if (scrollProgress > 0.15 && !isLeaving) {
     // Sécurité : bien au-delà du seuil, forcer caché
+    if (isMobile && mobileSequenceActive) {
+      cancelMobileSequence();
+    }
     bottomSection.classList.remove("arrow-entering");
     bottomSection.classList.remove("arrow-leaving");
     bottomSection.style.opacity = 0;
