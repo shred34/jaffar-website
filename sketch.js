@@ -108,9 +108,9 @@ function getMobileBottomPosition() {
   return bottomPx;
 }
 
-function positionElementAtBottom(element) {
+function positionElementAtBottom(element, offset = 0) {
   if (!element) return;
-  const bottomPx = getMobileBottomPosition();
+  const bottomPx = getMobileBottomPosition() + offset;
   element.style.position = "fixed";
   element.style.left = "50%";
   element.style.bottom = bottomPx + "px";
@@ -129,15 +129,15 @@ document.addEventListener("DOMContentLoaded", function () {
   // Sur mobile : lancer la séquence flèche → message → flèche
   // Sur desktop : afficher le message drag normal
   if (isMobileDevice()) {
-    // Cacher la flèche initialement sur mobile
-    if (bottomSection) {
-      bottomSection.style.opacity = 0;
-      arrowWasHidden = true;
-    }
+    arrowWasHidden = true;
     setTimeout(() => {
       startMobileReturnSequence();
     }, MOBILE_SEQUENCE_TIMING.INIT_DELAY);
   } else {
+    // Sur desktop, afficher la flèche immédiatement
+    if (bottomSection) {
+      bottomSection.style.opacity = 1;
+    }
     createDragHint();
   }
   
@@ -401,7 +401,7 @@ function createDragHintWithDuration(duration) {
 
   // Sur mobile, positionner dynamiquement le message drag en bas
   if (isMobileDevice()) {
-    positionElementAtBottom(dragHint);
+    positionElementAtBottom(dragHint, 65);
     dragHint.style.zIndex = 250;
     // Cacher la flèche verticale tant que le message drag est visible
     if (bottomSection) {

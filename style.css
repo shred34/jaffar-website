@@ -337,6 +337,7 @@ body {
     text-align: center;
     transition: opacity 0.1s ease;
     z-index: 200;
+    opacity: 0;
 }
 
 @keyframes arrowSlideDown {
