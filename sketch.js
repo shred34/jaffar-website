@@ -89,7 +89,7 @@ const MOBILE_SEQUENCE_TIMING = {
   MESSAGE_DISPLAY: 2000,   // Durée d'affichage du message (ms)
   FADE_TRANSITION: 300,    // Durée des transitions fade (ms)
   INIT_DELAY: 500,         // Délai avant démarrage séquence (ms)
-  TRANSITION_DELAY: 400    // Délai entre flèche et message (ms)
+  TRANSITION_DELAY: 100    // Délai entre flèche et message (ms)
 };
 
 // Fonctions utilitaires
@@ -401,7 +401,7 @@ function createDragHintWithDuration(duration) {
 
   // Sur mobile, positionner dynamiquement le message drag en bas
   if (isMobileDevice()) {
-    positionElementAtBottom(dragHint, 65);
+    positionElementAtBottom(dragHint, 5);
     dragHint.style.zIndex = 250;
     // Cacher la flèche verticale tant que le message drag est visible
     if (bottomSection) {
