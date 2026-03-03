@@ -819,6 +819,8 @@ function setupGlobalDrag() {
   let isDragging = false;
   let dragStarted = false;
   let startX = 0;
+  let startY = 0;
+  let touchDirectionLocked = null;
   let dragThreshold = 10; // Seuil pour distinguer clic et drag
 
   document.addEventListener("mousedown", function (e) {
@@ -916,6 +918,8 @@ function setupGlobalDrag() {
       isDragging = true;
       isDraggingGlobal = true;
       startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      touchDirectionLocked = null;
 
       if (dragHint) {
         clearTimeout(hintTimeout);
@@ -931,18 +935,26 @@ function setupGlobalDrag() {
       if (!isDragging) return;
 
       const deltaX = e.touches[0].clientX - startX;
+      const deltaY = e.touches[0].clientY - startY;
       const sensitivity = 30;
 
-      if (Math.abs(deltaX) > sensitivity) {
+      // Verrouiller la direction au premier mouvement significatif
+      if (!touchDirectionLocked && (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8)) {
+        touchDirectionLocked = Math.abs(deltaX) >= Math.abs(deltaY) ? 'horizontal' : 'vertical';
+      }
+
+      // Si horizontal : bloquer le scroll vertical immédiatement
+      if (touchDirectionLocked === 'horizontal') {
         e.preventDefault();
 
-        if (deltaX > 0) {
-          prevProjectInfinite();
-        } else {
-          nextProjectInfinite();
+        if (Math.abs(deltaX) > sensitivity) {
+          if (deltaX > 0) {
+            prevProjectInfinite();
+          } else {
+            nextProjectInfinite();
+          }
+          startX = e.touches[0].clientX;
         }
-
-        startX = e.touches[0].clientX;
       }
     },
     { passive: false },
@@ -952,6 +964,7 @@ function setupGlobalDrag() {
     if (isDragging) {
       isDragging = false;
       isDraggingGlobal = false;
+      touchDirectionLocked = null;
     }
   });
 }
