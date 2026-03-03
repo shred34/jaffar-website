@@ -364,7 +364,10 @@ function createDragHintWithDuration(duration) {
     dragHint.style.bottom = bottomPx + "px";
     dragHint.style.zIndex = 250;
     // Cacher la flèche verticale tant que le message drag est visible
-    if (bottomSection) bottomSection.style.opacity = 0;
+    if (bottomSection) {
+      bottomSection.style.opacity = 0;
+      arrowWasHidden = true; // Marquer que la flèche est cachée
+    }
     document.body.appendChild(dragHint);
   } else {
     mainContainer.appendChild(dragHint);
@@ -409,6 +412,9 @@ function hideHint() {
         const windowHeight = window.innerHeight;
         const scrollProgress = Math.min(scrollTop / (windowHeight * 0.2), 1);
         if (scrollProgress < 0.1) {
+          // Réinitialiser arrowWasHidden pour permettre l'animation d'entrée
+          arrowWasHidden = true;
+          
           if (window.visualViewport) {
             let bottomPx = 60;
             const viewportHeight = window.visualViewport.height;
@@ -417,12 +423,22 @@ function hideHint() {
             if (bottomPx < 24) bottomPx = 24;
             bottomSection.style.position = "fixed";
             bottomSection.style.left = "50%";
-            bottomSection.style.transform = "translateX(-50%)";
             bottomSection.style.bottom = bottomPx + "px";
           }
-          bottomSection.style.opacity = 1;
-        } else {
-          bottomSection.style.opacity = 0;
+          
+          // Lancer l'animation d'entrée de la flèche
+          bottomSection.classList.remove("arrow-leaving");
+          bottomSection.style.opacity = "";
+          bottomSection.style.transform = "";
+          bottomSection.classList.add("arrow-entering");
+          const onEnterEnd = () => {
+            bottomSection.classList.remove("arrow-entering");
+            bottomSection.style.opacity = 1;
+            bottomSection.style.transform = "translateX(-50%)";
+            arrowWasHidden = false;
+            bottomSection.removeEventListener("animationend", onEnterEnd);
+          };
+          bottomSection.addEventListener("animationend", onEnterEnd, { once: true });
         }
       }
     }, 200);
@@ -1103,18 +1119,24 @@ function handleVerticalScroll() {
     bottomSection.addEventListener("animationend", onLeaveEnd, { once: true });
   } else if (scrollProgress <= 0.01 && arrowWasHidden && !isEntering) {
     // On est revenu tout en haut → lancer l'animation d'entrée
-    bottomSection.classList.remove("arrow-leaving");
-    arrowWasHidden = false;
-    bottomSection.style.opacity = "";
-    bottomSection.style.transform = "";
-    bottomSection.classList.add("arrow-entering");
-    const onEnterEnd = () => {
-      bottomSection.classList.remove("arrow-entering");
-      bottomSection.style.opacity = 1;
-      bottomSection.style.transform = "translateX(-50%)";
-      bottomSection.removeEventListener("animationend", onEnterEnd);
-    };
-    bottomSection.addEventListener("animationend", onEnterEnd, { once: true });
+    // MAIS sur mobile, ne pas afficher la flèche si le dragHint est visible
+    const isMobile = prefersCoarsePointer;
+    const dragHintExists = !!dragHint;
+    
+    if (!isMobile || !dragHintExists) {
+      bottomSection.classList.remove("arrow-leaving");
+      arrowWasHidden = false;
+      bottomSection.style.opacity = "";
+      bottomSection.style.transform = "";
+      bottomSection.classList.add("arrow-entering");
+      const onEnterEnd = () => {
+        bottomSection.classList.remove("arrow-entering");
+        bottomSection.style.opacity = 1;
+        bottomSection.style.transform = "translateX(-50%)";
+        bottomSection.removeEventListener("animationend", onEnterEnd);
+      };
+      bottomSection.addEventListener("animationend", onEnterEnd, { once: true });
+    }
   } else if (scrollProgress > 0.15 && !isLeaving) {
     // Sécurité : bien au-delà du seuil, forcer caché
     bottomSection.classList.remove("arrow-entering");
