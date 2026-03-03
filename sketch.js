@@ -68,9 +68,6 @@ let video,
 let currentGlitchState = "tristan";
 let isGlitching = false;
 
-// Boutons fantômes
-let ghostArtistButton;
-
 // Variables UX
 let dragHint,
   hintTimeout,
@@ -86,6 +83,40 @@ let isDraggingGlobal = false;
 // Variable pour l'animation d'entrée de la flèche
 let arrowWasHidden = false;
 
+// Constantes de configuration
+const MOBILE_SEQUENCE_TIMING = {
+  ARROW_DISPLAY: 2000,    // Durée d'affichage de la flèche (ms)
+  MESSAGE_DISPLAY: 2000,   // Durée d'affichage du message (ms)
+  FADE_TRANSITION: 300,    // Durée des transitions fade (ms)
+  INIT_DELAY: 500,         // Délai avant démarrage séquence (ms)
+  TRANSITION_DELAY: 400    // Délai entre flèche et message (ms)
+};
+
+// Fonctions utilitaires
+function isMobileDevice() {
+  return window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+}
+
+function getMobileBottomPosition() {
+  let bottomPx = 24;
+  if (window.visualViewport) {
+    const viewportHeight = window.visualViewport.height;
+    const windowHeight = window.innerHeight;
+    bottomPx = windowHeight - viewportHeight + 24;
+    if (bottomPx < 24) bottomPx = 24;
+  }
+  return bottomPx;
+}
+
+function positionElementAtBottom(element) {
+  if (!element) return;
+  const bottomPx = getMobileBottomPosition();
+  element.style.position = "fixed";
+  element.style.left = "50%";
+  element.style.bottom = bottomPx + "px";
+  element.style.transform = "translateX(-50%)";
+}
+
 // Initialisation
 document.addEventListener("DOMContentLoaded", function () {
   initializeElements();
@@ -94,14 +125,29 @@ document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
   setupNavigationClicks();
   updateProjectsDisplay();
-  createDragHint();
+  
+  // Sur mobile : lancer la séquence flèche → message → flèche
+  // Sur desktop : afficher le message drag normal
+  if (isMobileDevice()) {
+    // Cacher la flèche initialement sur mobile
+    if (bottomSection) {
+      bottomSection.style.opacity = 0;
+      arrowWasHidden = true;
+    }
+    setTimeout(() => {
+      startMobileReturnSequence();
+    }, MOBILE_SEQUENCE_TIMING.INIT_DELAY);
+  } else {
+    createDragHint();
+  }
+  
   createMiniArrows();
   setupVideoPlayer();
   setupMouseTracking();
   setInterval(forceNavigationClickable, 100);
 
   // --- Interaction desktop : clic sur la moitié droite/gauche de la page pour tourner le carousel ---
-  if (!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches)) {
+  if (!isMobileDevice()) {
     document.addEventListener("click", function (e) {
       // Ne rien faire si clic sur un bouton, un lien, ou un élément interactif
       let el = e.target;
@@ -159,7 +205,7 @@ function initializeElements() {
 // MINI-FLÈCHES : Créer les flèches
 function createMiniArrows() {
   // Ne jamais créer les flèches sur mobile
-  if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
+  if (isMobileDevice()) {
     return;
   }
   // Créer flèche gauche — SVG custom
@@ -222,7 +268,7 @@ function createMiniArrows() {
   console.log("🎯 FLÈCHES CRÉÉES !");
 
   // --- Desktop uniquement : cacher/afficher les flèches quand la souris quitte/revient sur le document ---
-  if (!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches)) {
+  if (!isMobileDevice()) {
     let arrowsTemporarilyHidden = false;
     document.body.addEventListener("mouseleave", function () {
       const leftArrow = document.getElementById("leftArrow");
@@ -253,7 +299,7 @@ function createMiniArrows() {
   }
 
   // --- Ajout listeners desktop pour cacher/afficher les flèches quand la souris quitte/revient ---
-  if (!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches)) {
+  if (!isMobileDevice()) {
     window.addEventListener("mouseleave", function () {
       const leftArrow = document.getElementById("leftArrow");
       const rightArrow = document.getElementById("rightArrow");
@@ -353,24 +399,14 @@ function createDragHintWithDuration(duration) {
     background: transparent;
   `;
 
-  // Sur mobile, positionner dynamiquement le message drag en bas (au-dessus de la barre de recherche si présente)
-  if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) {
-    let bottomPx = 24;
-    if (window.visualViewport) {
-      const viewportHeight = window.visualViewport.height;
-      const windowHeight = window.innerHeight;
-      bottomPx = windowHeight - viewportHeight + 24;
-      if (bottomPx < 24) bottomPx = 24;
-    }
-    dragHint.style.position = "fixed";
-    dragHint.style.left = "50%";
-    dragHint.style.transform = "translateX(-50%)";
-    dragHint.style.bottom = bottomPx + "px";
+  // Sur mobile, positionner dynamiquement le message drag en bas
+  if (isMobileDevice()) {
+    positionElementAtBottom(dragHint);
     dragHint.style.zIndex = 250;
     // Cacher la flèche verticale tant que le message drag est visible
     if (bottomSection) {
       bottomSection.style.opacity = 0;
-      arrowWasHidden = true; // Marquer que la flèche est cachée
+      arrowWasHidden = true;
     }
     document.body.appendChild(dragHint);
   } else {
@@ -404,117 +440,27 @@ function hideHint() {
         dragHint.parentNode.removeChild(dragHint);
         dragHint = null;
       }
-      // Sur mobile, afficher la flèche verticale après disparition du message drag, mais uniquement si on est en haut de la page
-      if (
-        window.matchMedia &&
-        window.matchMedia("(pointer: coarse)").matches &&
-        bottomSection
-      ) {
+      // Sur mobile, afficher la flèche verticale après disparition du message drag
+      if (isMobileDevice() && bottomSection) {
         // Vérifie qu'on est bien en haut de la page (scrollProgress < 0.1)
         const scrollTop =
           window.pageYOffset || document.documentElement.scrollTop;
         const windowHeight = window.innerHeight;
         const scrollProgress = Math.min(scrollTop / (windowHeight * 0.2), 1);
         if (scrollProgress < 0.1) {
-          // Réinitialiser arrowWasHidden pour permettre l'animation d'entrée
-          arrowWasHidden = true;
-          
-          if (window.visualViewport) {
-            let bottomPx = 60;
-            const viewportHeight = window.visualViewport.height;
-            const windowHeight2 = window.innerHeight;
-            bottomPx = windowHeight2 - viewportHeight + 24;
-            if (bottomPx < 24) bottomPx = 24;
-            bottomSection.style.position = "fixed";
-            bottomSection.style.left = "50%";
-            bottomSection.style.bottom = bottomPx + "px";
-          }
-          
-          // Lancer l'animation d'entrée de la flèche
-          bottomSection.classList.remove("arrow-leaving");
-          bottomSection.style.opacity = "";
-          bottomSection.style.transform = "";
-          bottomSection.classList.add("arrow-entering");
-          const onEnterEnd = () => {
-            bottomSection.classList.remove("arrow-entering");
-            bottomSection.style.opacity = 1;
-            bottomSection.style.transform = "translateX(-50%)";
-            arrowWasHidden = false;
-            bottomSection.removeEventListener("animationend", onEnterEnd);
-          };
-          bottomSection.addEventListener("animationend", onEnterEnd, { once: true });
+          // Réafficher la flèche avec un fade in simple
+          positionElementAtBottom(bottomSection);
+          bottomSection.style.transition = "opacity 0.3s ease";
+          bottomSection.style.opacity = 1;
+          arrowWasHidden = false;
         }
       }
     }, 200);
-  } else {
-    // Cas rare : dragHint déjà supprimé, mais on veut forcer l'affichage de la flèche sur mobile
-    if (
-      window.matchMedia &&
-      window.matchMedia("(pointer: coarse)").matches &&
-      bottomSection
-    ) {
-      if (window.visualViewport) {
-        let bottomPx = 60;
-        const viewportHeight = window.visualViewport.height;
-        const windowHeight = window.innerHeight;
-        bottomPx = windowHeight - viewportHeight + 24;
-        if (bottomPx < 24) bottomPx = 24;
-        bottomSection.style.position = "fixed";
-        bottomSection.style.left = "50%";
-        bottomSection.style.transform = "translateX(-50%)";
-        bottomSection.style.bottom = bottomPx + "px";
-      }
-      bottomSection.style.opacity = 1;
-    }
   }
 }
 
 function createDragHint() {
   createDragHintWithDuration(4000);
-}
-
-function createGhostButtons() {
-  // Bouton artiste fantôme
-  ghostArtistButton = document.createElement("div");
-  ghostArtistButton.style.cssText = `
-    position: fixed !important;
-    top: 20px !important;
-    left: 20px !important;
-    width: 150px !important;
-    height: 20px !important;
-    z-index: 9999999 !important;
-    background: transparent !important;
-    cursor: pointer !important;
-    pointer-events: auto !important;
-  `;
-
-  ghostArtistButton.addEventListener("click", function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    window.location.href = "bio.html";
-  });
-
-  ghostArtistButton.addEventListener("mouseenter", function () {
-    const realArtist = document.querySelector(".nav-artist");
-    if (realArtist) {
-      realArtist.style.textDecoration = "underline";
-      realArtist.style.fontWeight = "500";
-      realArtist.style.transform = "translate(-2px, 2px)";
-      realArtist.style.transition = "all 0.3s ease";
-    }
-  });
-
-  ghostArtistButton.addEventListener("mouseleave", function () {
-    const realArtist = document.querySelector(".nav-artist");
-    if (realArtist) {
-      realArtist.style.textDecoration = "none";
-      realArtist.style.fontWeight = "500";
-      realArtist.style.transform = "translate(0, 0)";
-      realArtist.style.transition = "all 0.3s ease";
-    }
-  });
-
-  document.body.appendChild(ghostArtistButton);
 }
 
 function createProjects() {
@@ -701,11 +647,7 @@ function goToProject(targetIndex) {
   updateProjectsDisplay();
   updateActiveDot();
   // Sur mobile, scroll horizontal jusqu'au projet
-  if (
-    window.matchMedia &&
-    window.matchMedia("(pointer: coarse)").matches &&
-    projectsContainer
-  ) {
+  if (isMobileDevice() && projectsContainer) {
     const projectEls = projectsContainer.querySelectorAll(".project-item");
     if (projectEls[targetIndex]) {
       projectEls[targetIndex].scrollIntoView({
@@ -1083,78 +1025,50 @@ function cancelMobileSequence() {
 }
 
 // Séquence sur mobile : flèche → message → flèche (jamais les 2 ensemble)
+// SANS animation de montée (fade in/out simple)
 function startMobileReturnSequence() {
-  const isMobile = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-  if (!isMobile) return;
+  if (!isMobileDevice()) return;
   
   // Annuler toute séquence en cours
   cancelMobileSequence();
   mobileSequenceActive = true;
   
-  // ÉTAPE 1 : Afficher la flèche (3 secondes)
-  arrowWasHidden = true; // Pour déclencher l'animation d'entrée
-  bottomSection.classList.remove("arrow-leaving");
-  bottomSection.style.opacity = "";
-  bottomSection.style.transform = "";
-  bottomSection.classList.add("arrow-entering");
+  // ÉTAPE 1 : Afficher la flèche - FADE IN simple
+  positionElementAtBottom(bottomSection);
+  bottomSection.style.transition = `opacity ${MOBILE_SEQUENCE_TIMING.FADE_TRANSITION}ms ease`;
+  bottomSection.style.opacity = 1;
+  arrowWasHidden = false;
   
-  if (window.visualViewport) {
-    let bottomPx = 60;
-    const viewportHeight = window.visualViewport.height;
-    const windowHeight = window.innerHeight;
-    bottomPx = windowHeight - viewportHeight + 24;
-    if (bottomPx < 24) bottomPx = 24;
-    bottomSection.style.position = "fixed";
-    bottomSection.style.left = "50%";
-    bottomSection.style.bottom = bottomPx + "px";
-  }
-  
-  const onEnterEnd = () => {
-    bottomSection.classList.remove("arrow-entering");
-    bottomSection.style.opacity = 1;
-    bottomSection.style.transform = "translateX(-50%)";
-    arrowWasHidden = false;
-    bottomSection.removeEventListener("animationend", onEnterEnd);
-  };
-  bottomSection.addEventListener("animationend", onEnterEnd, { once: true });
-  
-  // ÉTAPE 2 : Après 3s, cacher la flèche
+  // ÉTAPE 2 : Après délai, cacher la flèche (fade out)
   const timeout1 = setTimeout(() => {
     if (!mobileSequenceActive) return;
     
-    bottomSection.classList.remove("arrow-entering");
-    bottomSection.classList.add("arrow-leaving");
-    const onLeaveEnd = () => {
-      bottomSection.classList.remove("arrow-leaving");
-      bottomSection.style.opacity = 0;
-      arrowWasHidden = true;
-      bottomSection.removeEventListener("animationend", onLeaveEnd);
-    };
-    bottomSection.addEventListener("animationend", onLeaveEnd, { once: true });
+    bottomSection.style.transition = `opacity ${MOBILE_SEQUENCE_TIMING.FADE_TRANSITION}ms ease`;
+    bottomSection.style.opacity = 0;
+    arrowWasHidden = true;
     
-    // ÉTAPE 3 : Après la sortie de la flèche, afficher le message (2s)
+    // ÉTAPE 3 : Après le fade out, afficher le message
     const timeout2 = setTimeout(() => {
       if (!mobileSequenceActive) return;
       
-      createDragHintWithDuration(2000);
+      createDragHintWithDuration(MOBILE_SEQUENCE_TIMING.MESSAGE_DISPLAY);
       
-      // ÉTAPE 4 : Après 2s, le message disparaît et la flèche revient
+      // ÉTAPE 4 : Après durée message, le message disparaît et la flèche revient
       const timeout3 = setTimeout(() => {
         if (!mobileSequenceActive) return;
         
-        // Le hideHint va déjà gérer la réapparition de la flèche
         if (dragHint) {
           hideHint();
         }
         
         mobileSequenceActive = false;
-      }, 2000);
+      }, MOBILE_SEQUENCE_TIMING.MESSAGE_DISPLAY);
       
       mobileSequenceTimeouts.push(timeout3);
-    }, 500); // 500ms après la sortie de la flèche
+    }, MOBILE_SEQUENCE_TIMING.TRANSITION_DELAY);
     
     mobileSequenceTimeouts.push(timeout2);
-  }, 3000); // Flèche visible pendant 3s
+  }, MOBILE_SEQUENCE_TIMING.ARROW_DISPLAY);
   
   mobileSequenceTimeouts.push(timeout1);
 }
@@ -1163,7 +1077,7 @@ function handleVerticalScroll() {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   const windowHeight = window.innerHeight;
   const scrollProgress = Math.min(scrollTop / (windowHeight * 0.2), 1);
-  const isMobile = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  const isMobile = isMobileDevice();
 
   if (scrollTop > 2 && !hasScrolledDown) {
     hasScrolledDown = true;
@@ -1210,7 +1124,7 @@ function handleVerticalScroll() {
   const arrowIsVisible = !arrowWasHidden;
 
   if (scrollProgress > 0.01 && (arrowIsVisible || isEntering) && !isLeaving) {
-    // Sur mobile : si on scroll pendant que le message est visible, le cacher et afficher la flèche
+    // Sur mobile : si on scroll pendant que le message est visible, juste le cacher (PAS de flèche)
     if (isMobile && dragHint) {
       clearTimeout(hintTimeout);
       if (dragHint && dragHint.parentNode) {
@@ -1218,12 +1132,11 @@ function handleVerticalScroll() {
         dragHint = null;
       }
       cancelMobileSequence();
-      
-      // Afficher la flèche pour l'animation de sortie
-      arrowWasHidden = false;
-      bottomSection.classList.remove("arrow-entering");
-      bottomSection.style.opacity = 1;
-      bottomSection.style.transform = "translateX(-50%)";
+      // Ne PAS afficher la flèche, juste s'assurer qu'elle reste cachée
+      arrowWasHidden = true;
+      bottomSection.style.opacity = 0;
+      // Sortir de la fonction pour éviter l'animation de sortie de la flèche
+      return;
     }
     
     // On commence à scroller vers le bas → lancer l'animation de sortie
@@ -1276,15 +1189,8 @@ function handleVerticalScroll() {
 
   // Positionnement mobile
   if (scrollProgress < 0.15) {
-    if (prefersCoarsePointer && window.visualViewport) {
-      let bottomPx = 60;
-      const viewportHeight = window.visualViewport.height;
-      const windowHeight = window.innerHeight;
-      bottomPx = windowHeight - viewportHeight + 24;
-      if (bottomPx < 24) bottomPx = 24;
-      bottomSection.style.position = "fixed";
-      bottomSection.style.left = "50%";
-      bottomSection.style.bottom = bottomPx + "px";
+    if (prefersCoarsePointer) {
+      positionElementAtBottom(bottomSection);
     } else {
       bottomSection.style.position = "";
       bottomSection.style.left = "";
