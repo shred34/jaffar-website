@@ -98,8 +98,13 @@ const MOBILE_SEQUENCE_TIMING = {
 };
 
 // Fonctions utilitaires
+let _isMobileCached = null;
 function isMobileDevice() {
-  return window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  if (_isMobileCached === null) {
+    _isMobileCached =
+      window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  }
+  return _isMobileCached;
 }
 
 function getMobileBottomPosition() {
@@ -145,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
   createMiniArrows();
   setupVideoPlayer();
   setupMouseTracking();
-  setInterval(forceNavigationClickable, 100);
+  setInterval(forceNavigationClickable, 500);
 
   // --- Interaction desktop : clic sur la moitié droite/gauche de la page pour tourner le carousel ---
   if (!isMobileDevice()) {
@@ -803,13 +808,23 @@ function updateProjectsDisplayInstant() {
   updateActiveDot();
 }
 
+let _scrollRafPending = false;
+function _throttledScroll() {
+  if (_scrollRafPending) return;
+  _scrollRafPending = true;
+  requestAnimationFrame(() => {
+    handleVerticalScroll();
+    _scrollRafPending = false;
+  });
+}
+
 function setupEventListeners() {
-  window.addEventListener("scroll", handleVerticalScroll, { passive: true });
+  window.addEventListener("scroll", _throttledScroll, { passive: true });
 
   if (bottomSection) {
     bottomSection.addEventListener("click", function () {
       window.scrollTo({
-        top: window.innerHeight * 0.8,
+        top: document.body.scrollHeight,
         behavior: "smooth",
       });
     });
@@ -1201,9 +1216,18 @@ function handleVerticalScroll() {
   handleNavigationTransition(scrollProgress);
 }
 
+// Cache DOM refs pour le scroll handler
+let _cachedNavFixed = null;
+let _cachedArtistNav = null;
+let _cachedNavItems = null;
+let _cachedGradientOverlay = null;
+
 function handleNavigationTransition(scrollProgress) {
-  const navFixed = document.querySelector(".nav-fixed");
-  const artistNav = document.querySelector(".nav-artist");
+  if (!_cachedNavFixed) _cachedNavFixed = document.querySelector(".nav-fixed");
+  if (!_cachedArtistNav)
+    _cachedArtistNav = document.querySelector(".nav-artist");
+  const navFixed = _cachedNavFixed;
+  const artistNav = _cachedArtistNav;
 
   if (!navFixed || !artistNav) return;
 
@@ -1211,7 +1235,9 @@ function handleNavigationTransition(scrollProgress) {
   navFixed.style.pointerEvents = "auto";
   navFixed.style.position = "fixed";
 
-  const navItems = navFixed.querySelectorAll(".nav-item");
+  if (!_cachedNavItems)
+    _cachedNavItems = navFixed.querySelectorAll(".nav-item");
+  const navItems = _cachedNavItems;
   navItems.forEach((item) => {
     item.style.pointerEvents = "auto";
     item.style.cursor = "pointer";
@@ -1340,7 +1366,9 @@ function navigateToContact(e) {
 }
 
 function updateGradientOnScroll(scrollProgress) {
-  const gradientOverlay = document.querySelector(".gradient-overlay");
+  if (!_cachedGradientOverlay)
+    _cachedGradientOverlay = document.querySelector(".gradient-overlay");
+  const gradientOverlay = _cachedGradientOverlay;
   if (!gradientOverlay) return;
 
   const intensity = Math.max(0, scrollProgress);
@@ -1440,9 +1468,9 @@ function updateJaffarSection(scrollProgress) {
   const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
   const realProgress = maxScroll > 0 ? Math.min(scrollTop / maxScroll, 1) : 0;
 
-  // Zone d'animation du texte : realProgress 0.65 → 1.0 (commence un peu plus tôt)
+  // Zone d'animation du texte : realProgress 0.65 → 0.85 (finit avant la fin du scroll)
   const textStart = 0.65;
-  const textEnd = 1.0;
+  const textEnd = 0.9;
 
   if (realProgress < textStart) {
     // Pas encore dans la zone → cacher complètement
