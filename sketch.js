@@ -134,15 +134,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // Sur mobile : lancer la séquence flèche → message → flèche
   // Sur desktop : afficher le message drag normal
   if (isMobileDevice()) {
-    arrowWasHidden = true;
     setTimeout(() => {
       startMobileReturnSequence();
     }, MOBILE_SEQUENCE_TIMING.INIT_DELAY);
   } else {
-    // Sur desktop, afficher la flèche immédiatement
-    if (bottomSection) {
-      bottomSection.style.opacity = 1;
-    }
+    // Sur desktop, la flèche est déjà visible via CSS (opacity: 1)
     createDragHint();
   }
 
@@ -436,7 +432,7 @@ function createDragHintWithDuration(duration) {
     // Cacher la flèche verticale tant que le message drag est visible
     if (bottomSection) {
       bottomSection.style.opacity = 0;
-      arrowWasHidden = true;
+      bottomSection.style.pointerEvents = "none";
     }
     document.body.appendChild(dragHint);
   } else {
@@ -472,17 +468,14 @@ function hideHint() {
       }
       // Sur mobile, afficher la flèche verticale après disparition du message drag
       if (isMobileDevice() && bottomSection) {
-        // Vérifie qu'on est bien en haut de la page (scrollProgress < 0.1)
         const scrollTop =
           window.pageYOffset || document.documentElement.scrollTop;
         const windowHeight = window.innerHeight;
         const scrollProgress = Math.min(scrollTop / (windowHeight * 0.2), 1);
         if (scrollProgress < 0.1) {
-          // Réafficher la flèche avec un fade in simple
           positionElementAtBottom(bottomSection);
-          bottomSection.style.transition = "opacity 0.3s ease";
-          bottomSection.style.opacity = 1;
-          arrowWasHidden = false;
+          bottomSection.style.opacity = "1";
+          bottomSection.style.pointerEvents = "auto";
         }
       }
     }, 200);
@@ -815,14 +808,6 @@ function setupEventListeners() {
 
   if (bottomSection) {
     bottomSection.addEventListener("click", function () {
-      // Fade out rapide de la flèche avant le scroll
-      bottomSection.classList.remove("arrow-entering", "arrow-leaving");
-      bottomSection.style.transition = "opacity 0.15s ease";
-      bottomSection.style.opacity = "0";
-      arrowWasHidden = true;
-      setTimeout(() => {
-        bottomSection.style.transition = "";
-      }, 200);
       window.scrollTo({
         top: window.innerHeight * 0.8,
         behavior: "smooth",
@@ -1091,17 +1076,15 @@ function startMobileReturnSequence() {
 
   // ÉTAPE 1 : Afficher la flèche - FADE IN simple
   positionElementAtBottom(bottomSection);
-  bottomSection.style.transition = `opacity ${MOBILE_SEQUENCE_TIMING.FADE_TRANSITION}ms ease`;
-  bottomSection.style.opacity = 1;
-  arrowWasHidden = false;
+  bottomSection.style.opacity = "1";
+  bottomSection.style.pointerEvents = "auto";
 
   // ÉTAPE 2 : Après délai, cacher la flèche (fade out)
   const timeout1 = setTimeout(() => {
     if (!mobileSequenceActive) return;
 
-    bottomSection.style.transition = `opacity ${MOBILE_SEQUENCE_TIMING.FADE_TRANSITION}ms ease`;
-    bottomSection.style.opacity = 0;
-    arrowWasHidden = true;
+    bottomSection.style.opacity = "0";
+    bottomSection.style.pointerEvents = "none";
 
     // ÉTAPE 3 : Après le fade out, afficher le message
     const timeout2 = setTimeout(() => {
@@ -1135,120 +1118,63 @@ function handleVerticalScroll() {
   const scrollProgress = Math.min(scrollTop / (windowHeight * 0.85), 1);
   const isMobile = isMobileDevice();
 
+  // --- Drag hint: cacher dès qu'on scroll ---
   if (scrollTop > 2 && !hasScrolledDown) {
     hasScrolledDown = true;
 
-    // Annuler la séquence mobile si en cours
     if (isMobile && mobileSequenceActive) {
       cancelMobileSequence();
     }
 
     if (dragHint) {
       clearTimeout(hintTimeout);
-      hideHint(); // Ceci va aussi cacher les flèches
+      hideHint();
     }
   } else if (scrollTop <= 2 && hasScrolledDown) {
     hasScrolledDown = false;
 
     if (isMobile) {
-      // Sur mobile : séquence flèche → message → flèche
       setTimeout(() => {
         startMobileReturnSequence();
       }, 200);
     } else {
-      // Sur desktop : message normal
       setTimeout(() => {
         if (!dragHint) {
-          createDragHintWithDuration(3000); // Ceci va aussi afficher les flèches
+          createDragHintWithDuration(3000);
         }
       }, 200);
     }
   }
 
-  const currentScrollTop = scrollTop;
-  const lastScrollTop = handleVerticalScroll.lastScrollTop || 0;
-  const isScrollingDown = currentScrollTop > lastScrollTop;
-  handleVerticalScroll.lastScrollTop = currentScrollTop;
-
   updateGradientOnScroll(scrollProgress);
 
-  const prefersCoarsePointer = isMobile;
-
-  // --- Gestion de la flèche avec animations symétriques ---
-  const isEntering = bottomSection.classList.contains("arrow-entering");
-  const isLeaving = bottomSection.classList.contains("arrow-leaving");
-  const arrowIsVisible = !arrowWasHidden;
-
-  if (scrollProgress > 0.01 && (arrowIsVisible || isEntering) && !isLeaving) {
-    // Sur mobile : si on scroll pendant que le message est visible, juste le cacher (PAS de flèche)
-    if (isMobile && dragHint) {
-      clearTimeout(hintTimeout);
-      if (dragHint && dragHint.parentNode) {
-        dragHint.parentNode.removeChild(dragHint);
-        dragHint = null;
-      }
-      cancelMobileSequence();
-      arrowWasHidden = true;
-      bottomSection.style.opacity = 0;
-      return;
-    }
-
-    // On scroll vers le bas → fade out rapide immédiat (pas d'animation CSS lourde)
-    bottomSection.classList.remove("arrow-entering", "arrow-leaving");
-    bottomSection.style.transition = "opacity 0.15s ease";
-    bottomSection.style.opacity = "0";
-    arrowWasHidden = true;
-    setTimeout(() => {
-      bottomSection.style.transition = "";
-    }, 200);
-  } else if (scrollProgress <= 0.01 && arrowWasHidden && !isEntering) {
-    // On est revenu tout en haut → lancer l'animation d'entrée
-    // MAIS : ne pas interférer avec la séquence mobile
-    const dragHintExists = !!dragHint;
-
-    // Ne rien faire si la séquence mobile est en cours
-    if (isMobile && mobileSequenceActive) {
-      return;
-    }
-
-    if (!isMobile || !dragHintExists) {
-      bottomSection.classList.remove("arrow-leaving");
-      arrowWasHidden = false;
-      bottomSection.style.opacity = "";
-      bottomSection.style.transform = "";
-      bottomSection.classList.add("arrow-entering");
-      const onEnterEnd = () => {
-        bottomSection.classList.remove("arrow-entering");
-        bottomSection.style.opacity = 1;
-        bottomSection.style.transform = "translateX(-50%)";
-        bottomSection.removeEventListener("animationend", onEnterEnd);
-      };
-      bottomSection.addEventListener("animationend", onEnterEnd, {
-        once: true,
-      });
-    }
-  } else if (scrollProgress > 0.15 && !isLeaving) {
-    // Sécurité : bien au-delà du seuil, forcer caché
-    if (isMobile && mobileSequenceActive) {
-      cancelMobileSequence();
-    }
-    bottomSection.classList.remove("arrow-entering");
-    bottomSection.classList.remove("arrow-leaving");
-    bottomSection.style.opacity = 0;
-    arrowWasHidden = true;
-  }
-
-  // Positionnement mobile
-  if (scrollProgress < 0.15) {
-    if (prefersCoarsePointer) {
-      positionElementAtBottom(bottomSection);
+  // --- Flèche du bas : logique SIMPLE ---
+  // Visible quand on est en haut, cachée sinon. C'est tout.
+  if (bottomSection) {
+    if (scrollProgress > 0.02) {
+      bottomSection.style.opacity = "0";
+      bottomSection.style.pointerEvents = "none";
     } else {
-      bottomSection.style.position = "";
-      bottomSection.style.left = "";
-      bottomSection.style.bottom = "";
+      // Ne pas forcer l'affichage si la séquence mobile est en cours et a caché la flèche
+      if (
+        !(
+          isMobile &&
+          mobileSequenceActive &&
+          bottomSection.style.opacity === "0"
+        )
+      ) {
+        bottomSection.style.opacity = "1";
+        bottomSection.style.pointerEvents = "auto";
+      }
+    }
+
+    // Positionnement mobile
+    if (scrollProgress < 0.15 && isMobile) {
+      positionElementAtBottom(bottomSection);
     }
   }
 
+  // --- Dots navigation ---
   if (navigationDots) {
     if (scrollProgress >= 0.25) {
       const dotOpacity = Math.max(0, 1 - (scrollProgress - 0.25) / 0.15);
@@ -1260,7 +1186,7 @@ function handleVerticalScroll() {
 
   if (dragHint && scrollProgress > 0.05) {
     clearTimeout(hintTimeout);
-    hideHint(); // Ceci va aussi cacher les flèches
+    hideHint();
   }
 
   if (scrollProgress >= 0.35) {
@@ -1269,7 +1195,7 @@ function handleVerticalScroll() {
     hideVideo();
   }
 
-  // Section Jaffar sous la vidéo — scroll-linked
+  // Section Jaffar sous la vidéo
   updateJaffarSection(scrollProgress);
 
   handleNavigationTransition(scrollProgress);
@@ -1494,15 +1420,7 @@ function ensureJaffarSection() {
   const btn = document.getElementById("jaffar-return-btn");
   if (btn) {
     btn.addEventListener("click", () => {
-      // Fade out rapide du texte Jaffar avant le scroll
-      if (jaffarSectionEl) {
-        jaffarSectionEl.style.transition = "opacity 0.15s ease";
-        jaffarSectionEl.style.opacity = "0";
-        jaffarSectionEl.style.pointerEvents = "none";
-        setTimeout(() => {
-          jaffarSectionEl.style.transition = "";
-        }, 200);
-      }
+      // Simplement scroll vers le haut — le scroll handler gère tout le reste
       smoothScrollToTop();
     });
     const svg = btn.querySelector("svg");
@@ -1517,11 +1435,16 @@ function ensureJaffarSection() {
 
 // Met à jour la position du texte Jaffar directement en fonction du scroll (scroll-linked)
 function updateJaffarSection(scrollProgress) {
-  // Zone d'animation du texte : scrollProgress 0.68 → 0.82 (apparaît plus tôt)
-  const textStart = 0.68;
-  const textEnd = 0.82;
+  // Utiliser le vrai ratio de scroll (0→1 sur toute la hauteur scrollable)
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const realProgress = maxScroll > 0 ? Math.min(scrollTop / maxScroll, 1) : 0;
 
-  if (scrollProgress < textStart) {
+  // Zone d'animation du texte : realProgress 0.65 → 1.0 (commence un peu plus tôt)
+  const textStart = 0.65;
+  const textEnd = 1.0;
+
+  if (realProgress < textStart) {
     // Pas encore dans la zone → cacher complètement
     if (jaffarSectionEl) {
       jaffarSectionEl.style.transform = "translateY(100%)";
@@ -1537,7 +1460,7 @@ function updateJaffarSection(scrollProgress) {
   // Progression locale 0→1 dans la zone textStart→textEnd
   const t = Math.min(
     1,
-    Math.max(0, (scrollProgress - textStart) / (textEnd - textStart)),
+    Math.max(0, (realProgress - textStart) / (textEnd - textStart)),
   );
 
   // translateY : 100% → 0% (vient d'en bas, repart en bas)
@@ -1545,10 +1468,6 @@ function updateJaffarSection(scrollProgress) {
   jaffarSectionEl.style.transform = `translateY(${translateY}%)`;
   jaffarSectionEl.style.opacity = String(t);
   jaffarSectionEl.style.pointerEvents = t > 0.8 ? "auto" : "none";
-
-  // Cacher la flèche du bas quand le texte apparaît
-  const bottomSec = document.querySelector(".bottom-section");
-  if (bottomSec) bottomSec.style.opacity = t > 0 ? "0" : "";
 }
 
 function createOrShowVideo(scrollProgress) {

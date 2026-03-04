@@ -335,45 +335,9 @@ body {
     left: 50%;
     transform: translateX(-50%);
     text-align: center;
-    transition: opacity 0.1s ease;
+    transition: opacity 0.3s ease;
     z-index: 200;
-    opacity: 0;
-}
-
-@keyframes arrowSlideDown {
-    0% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-300px);
-    }
-    30% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-}
-
-@keyframes arrowSlideUp {
-    0% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-    70% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-300px);
-    }
-}
-
-.bottom-section.arrow-entering {
-    animation: arrowSlideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.bottom-section.arrow-leaving {
-    animation: arrowSlideUp 0.5s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+    opacity: 1;
 }
 
 /* Flèche SVG custom — design éditorial */
