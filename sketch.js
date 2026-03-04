@@ -21,7 +21,7 @@ const projectsData = [
   {
     id: 5,
     title: "Plus ou moins concret",
-    subtitle: "5 projets",
+    subtitle: "6 projets",
     file: "concret.html",
     image: "image/couv_concret.jpg",
   },
@@ -35,7 +35,7 @@ const projectsData = [
   {
     id: 4,
     title: "Plus ou moins abstrait",
-    subtitle: "6 projets",
+    subtitle: "7 projets",
     file: "abstrait.html",
     image: "image/couv_abstrait.jpg",
   },
