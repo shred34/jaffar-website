@@ -1,9 +1,16 @@
 // Variables globales
-let currentProjectIndex = 2;
+let currentProjectIndex = 3;
 let projects = [];
 
 // Configuration des projets (l'ordre détermine la disposition dans le carousel)
 const projectsData = [
+  {
+    id: 7,
+    title: "Random Access Memory",
+    subtitle: "",
+    file: "random-access-memory.html",
+    image: "image/couv_random.jpg",
+  },
   {
     id: 1,
     title: "L'étoile de Mer",
@@ -534,7 +541,7 @@ function createProjects() {
     projectsContainer.appendChild(projectElement);
   });
 
-  currentProjectIndex = projectsData.length + 2;
+  currentProjectIndex = projectsData.length + 3;
 }
 
 function createNavigationDots() {

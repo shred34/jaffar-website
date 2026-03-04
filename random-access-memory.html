@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Concret - Tristan Linder</title>
+    <title>Random Access Memory - Tristan Linder</title>
     <style>
       @font-face {
         font-family: "Rebond Grotesque";
@@ -80,34 +80,29 @@
         padding: 120px 40px 100px;
       }
 
-      .project-block {
-        margin-bottom: 90px;
-        background: #fff;
-        position: relative;
-        z-index: 1;
-      }
-
       .project-title {
         font-size: 20px;
         font-weight: 300;
         color: #000;
-        margin-bottom: 25px;
+        margin-bottom: 12px;
       }
 
-      .project-description {
+      .project-intro {
         font-size: 13px;
         font-weight: 300;
         line-height: 1.7;
-        color: #000;
-        max-width: 550px;
-        margin-top: 22px;
+        color: #333;
+        max-width: 520px;
+        margin-bottom: 50px;
       }
 
-      .project-separator {
-        width: 25px;
-        height: 1px;
-        background: #ddd;
-        margin: 70px 0;
+      .project-description {
+        font-size: 14px;
+        font-weight: 300;
+        line-height: 1.9;
+        color: #000;
+        max-width: 680px;
+        margin-top: 60px;
       }
 
       .photos-row {
@@ -154,6 +149,19 @@
       }
       .photo-item:hover .photo-dot {
         opacity: 0.5;
+      }
+
+      .cross-link {
+        display: inline-block;
+        margin-top: 50px;
+        font-size: 13px;
+        font-weight: 300;
+        color: #000;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+      .cross-link:hover {
+        text-decoration: underline;
       }
 
       .modal {
@@ -293,334 +301,88 @@
     </a>
 
     <div class="page-container">
-      <!-- Bury the Hatchet — 3 photos : 3 côte à côte -->
-      <div class="project-block">
-        <h3 class="project-title">Bury the Hatchet</h3>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img
-              src="imagepro/concret/EYES/2526_S18_Grp1_The_Cramberries_1.jpg"
-              alt=""
-            />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img
-              src="imagepro/concret/EYES/2526_S18_Grp1_The_Cramberries_2.jpg"
-              alt=""
-            />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img
-              src="imagepro/concret/EYES/2526_S18_Grp1_The_Cramberries_3.jpg"
-              alt=""
-            />
-            <div class="photo-dot"></div>
-          </div>
+      <h3 class="project-title">Random Access Memory</h3>
+
+      <!-- 9 photos : 2+2+3+2 -->
+      <div class="photos-row">
+        <div class="photo-item">
+          <img src="imagepro/random%20acces%20memory/nume1.jpg" alt="" />
+          <div class="photo-dot"></div>
         </div>
-        <p class="project-description">
-          Série de trois images réalisées en collaboration avec une classe de
-          Polydesign du CEPV. Les images s'inspirent, comme le titre l'indique,
-          de la cover de l'album homonyme de The Cranberries réalisée par Storm
-          Thorgerson.
-        </p>
+        <div class="photo-item">
+          <img
+            src="imagepro/random%20acces%20memory/BELLEVEAUX_TRISTAN31.jpg"
+            alt=""
+          />
+          <div class="photo-dot"></div>
+        </div>
+      </div>
+      <div class="photos-row">
+        <div class="photo-item">
+          <img src="imagepro/random%20acces%20memory/DSCF5495.jpg" alt="" />
+          <div class="photo-dot"></div>
+        </div>
+        <div class="photo-item">
+          <img src="imagepro/random%20acces%20memory/NB019.jpg" alt="" />
+          <div class="photo-dot"></div>
+        </div>
+      </div>
+      <div class="photos-row">
+        <div class="photo-item">
+          <img
+            src="imagepro/random%20acces%20memory/NB_portfolio14.jpg"
+            alt=""
+          />
+          <div class="photo-dot"></div>
+        </div>
+        <div class="photo-item">
+          <img src="imagepro/random%20acces%20memory/absence_1.jpg" alt="" />
+          <div class="photo-dot"></div>
+        </div>
+        <div class="photo-item">
+          <img src="imagepro/random%20acces%20memory/chaisetable.jpg" alt="" />
+          <div class="photo-dot"></div>
+        </div>
+      </div>
+      <div class="photos-row">
+        <div class="photo-item">
+          <img
+            src="imagepro/random%20acces%20memory/img20250404_11331808%20copie.jpg"
+            alt=""
+          />
+          <div class="photo-dot"></div>
+        </div>
+        <div class="photo-item">
+          <img src="imagepro/random%20acces%20memory/masco.jpg" alt="" />
+          <div class="photo-dot"></div>
+        </div>
       </div>
 
-      <div class="project-separator"></div>
+      <p class="project-description">
+        Voici une galerie d'images, toutes prises sous l'emprise d'une pulsion,
+        qui signifient parfois plus, parfois moins. Ce n'est rien de plus qu'une
+        galerie d'images.
+      </p>
 
-      <!-- Spikes Télécom — 3 photos : 3 côte à côte -->
-      <div class="project-block">
-        <h3 class="project-title">Spikes Télécom</h3>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/concret/SPIKES/studio_1.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/SPIKES/studio_2.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/SPIKES/studio_3.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <p class="project-description">
-          Triptyque réalisé en collaboration avec les archives des classes de
-          céramique du CEPV. Les images illustrent ici la communication autant
-          liquide qu'épineuse de notre époque. Avec toujours plus de connexions
-          instantanées, nos échanges en deviennent abstraits.
-        </p>
-      </div>
-
-      <div class="project-separator"></div>
-
-      <!-- Voyage — 9 photos : 3+3+3 -->
-      <div class="project-block">
-        <h3 class="project-title">Voyage</h3>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_1.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_2.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_3.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_4.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_5.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_6.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_7.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_8.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/voyage/voyage_9.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <p class="project-description">
-          Retour aux sources. Même si ces photos ne sont pas à l'origine de ma
-          pratique, le voyage, lui, est la source de mes premières inspirations
-          photographiques.<br /><br />
-          Où défilent et diffèrent<br />
-          Parfums, quotidiens,<br />
-          Visages et paysages<br />
-          Ce bref moment de répits,<br />
-          Que l'on s'accorde pour supporter :<br />
-          Stress, obligations et responsabilités.<br />
-          De retour, pendant un Instant<br />
-          Dans l'émerveillement constant<br />
-          D'un enfant devant la nouveauté.<br /><br />
-          Changement désiré :<br />
-          Seul ou accompagné,<br />
-          Pour se retrouver ;<br />
-          Se perdre ou s'abandonner.<br />
-          Ces excursions, par-delà<br />
-          Les zones de confort,<br />
-          Ne sont-elles pas,<br />
-          Finalement, qu'une excuse<br />
-          Pour apprécier un présent<br />
-          Rêvé ?<br />
-          Inexistant dans nos vies,<br />
-          Trop remplies d'habitudes<br />
-          Acquises.<br /><br />
-          Quelque part, l'aventure<br />
-          Ne puise-t-elle pas ses origines<br />
-          Chez-nous ?<br />
-          En nous ?<br />
-          Chez soi, chez l'autre ?
-        </p>
-      </div>
-
-      <div class="project-separator"></div>
-
-      <!-- Architecture — 9 photos : 3+3+3 -->
-      <div class="project-block">
-        <h3 class="project-title">Architecture</h3>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/ruelles_1.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/ruelles_2.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/ruelles_3.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/voyage20.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/voyage22.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/voyage4.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/voyage5.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/voyage6.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/concret/architectural/voyage9.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <p class="project-description">
-          Né d'un amour pour les lignes de forces, obliques comme droites, ces
-          images sont pour moi une source d'apaisement.
-        </p>
-      </div>
-
-      <div class="project-separator"></div>
-
-      <!-- Rural — 11 photos : 3+3+3+2 -->
-      <div class="project-block">
-        <h3 class="project-title">Rural</h3>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/rural/2026.01.10_NB_Flas_Metz_09.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/rural/NB%20AMORE%20(10)_2.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/rural/NB026.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/rural/NB_4x501.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/rural/NB_4x502.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/rural/NB_mort08.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/rural/NB_portfolio01.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/rural/fnn.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/rural/tirage_titi_01.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/rural/tirage_titi_02.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/rural/tirage_titi_03.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <p class="project-description">
-          Ces photographies sont un moyen pour moi de redécouvrir les paysages
-          qui m'ont vu grandir, de témoigner subjectivement de leur apparence
-          et, finalement, de redéfinir l'image mentale que nous avons de la
-          campagne suisse romande.
-        </p>
-        <a
-          href="rural.html"
-          class="cross-link"
-          style="
-            display: inline-block;
-            margin-top: 18px;
-            font-size: 13px;
-            font-weight: 300;
-            color: #000;
-            text-decoration: none;
-            border: 1px solid #ccc;
-            padding: 8px 18px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-          "
-          onmouseover="this.style.borderColor = '#000'"
-          onmouseout="this.style.borderColor = '#ccc'"
-          >voir le projet en entier</a
-        >
-      </div>
-
-      <div class="project-separator"></div>
-
-      <!-- La Plage — 4 photos : 2+2 -->
-      <div class="project-block">
-        <h3 class="project-title">La Plage</h3>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/la-plage/plage_1.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/la-plage/plage_2.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <div class="photos-row">
-          <div class="photo-item">
-            <img src="imagepro/la-plage/plage_3.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-          <div class="photo-item">
-            <img src="imagepro/la-plage/plage_crop.jpg" alt="" />
-            <div class="photo-dot"></div>
-          </div>
-        </div>
-        <p class="project-description">
-          La plage devient notre état d'âme et nos yeux se ferment sur les
-          angoisses du monde.
-        </p>
-        <a
-          href="la-plage.html"
-          class="cross-link"
-          style="
-            display: inline-block;
-            margin-top: 18px;
-            font-size: 13px;
-            font-weight: 300;
-            color: #000;
-            text-decoration: none;
-            border: 1px solid #ccc;
-            padding: 8px 18px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-          "
-          onmouseover="this.style.borderColor = '#000'"
-          onmouseout="this.style.borderColor = '#ccc'"
-          >voir le projet en entier</a
-        >
-      </div>
+      <a
+        href="abstrait.html"
+        class="cross-link"
+        style="
+          display: inline-block;
+          margin-top: 18px;
+          font-size: 13px;
+          font-weight: 300;
+          color: #000;
+          text-decoration: none;
+          border: 1px solid #ccc;
+          padding: 8px 18px;
+          border-radius: 20px;
+          transition: all 0.3s ease;
+        "
+        onmouseover="this.style.borderColor = '#000'"
+        onmouseout="this.style.borderColor = '#ccc'"
+        >voir les autres projets plus ou moins abstrait</a
+      >
     </div>
 
     <div class="modal" id="modal">
@@ -685,6 +447,9 @@
         const modalCounter = document.getElementById("modalCounter");
         const backArrow = document.getElementById("backArrow");
         const photoItems = document.querySelectorAll(".photo-item");
+        const allPhotos = Array.from(
+          document.querySelectorAll(".photo-item img"),
+        ).map((img) => img.src);
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
@@ -707,7 +472,6 @@
             currentProjectPhotos.length > 0
               ? currentPhotoIndex + 1 + "/" + currentProjectPhotos.length
               : "";
-          // Flèches toujours visibles, mais désactivées si inutilisables
           if (currentPhotoIndex > 0) {
             modalPrev.style.opacity = "1";
             modalPrev.style.pointerEvents = "auto";
@@ -740,12 +504,7 @@
         photoItems.forEach((item) => {
           item.addEventListener("click", function () {
             scrollPosition = window.pageYOffset;
-            const projectBlock = this.closest(".project-block");
-            const projectPhotos =
-              projectBlock.querySelectorAll(".photo-item img");
-            currentProjectPhotos = Array.from(projectPhotos).map(
-              (img) => img.src,
-            );
+            currentProjectPhotos = allPhotos;
             const clickedSrc = this.querySelector("img").src;
             currentPhotoIndex = currentProjectPhotos.indexOf(clickedSrc);
             modalImg.src = clickedSrc;
