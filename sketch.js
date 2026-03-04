@@ -820,7 +820,9 @@ function setupEventListeners() {
       bottomSection.style.transition = "opacity 0.15s ease";
       bottomSection.style.opacity = "0";
       arrowWasHidden = true;
-      setTimeout(() => { bottomSection.style.transition = ""; }, 200);
+      setTimeout(() => {
+        bottomSection.style.transition = "";
+      }, 200);
       window.scrollTo({
         top: window.innerHeight * 0.8,
         behavior: "smooth",
@@ -1196,7 +1198,9 @@ function handleVerticalScroll() {
     bottomSection.style.transition = "opacity 0.15s ease";
     bottomSection.style.opacity = "0";
     arrowWasHidden = true;
-    setTimeout(() => { bottomSection.style.transition = ""; }, 200);
+    setTimeout(() => {
+      bottomSection.style.transition = "";
+    }, 200);
   } else if (scrollProgress <= 0.01 && arrowWasHidden && !isEntering) {
     // On est revenu tout en haut → lancer l'animation d'entrée
     // MAIS : ne pas interférer avec la séquence mobile
@@ -1495,7 +1499,9 @@ function ensureJaffarSection() {
         jaffarSectionEl.style.transition = "opacity 0.15s ease";
         jaffarSectionEl.style.opacity = "0";
         jaffarSectionEl.style.pointerEvents = "none";
-        setTimeout(() => { jaffarSectionEl.style.transition = ""; }, 200);
+        setTimeout(() => {
+          jaffarSectionEl.style.transition = "";
+        }, 200);
       }
       smoothScrollToTop();
     });
