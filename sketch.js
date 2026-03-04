@@ -1480,8 +1480,7 @@ function showJaffarSection() {
       opacity: 0;
       transition: opacity 0.7s ease 0.3s;
     ">
-      Jaffar, c'est un alter-ego, un personnage focalisé sur l'instanté,<br>
-      encore en évolution. Affaire à suivre...
+      Jaffar, c'est un alter-ego, un personnage focalisé sur l'instanté,${isMobileDevice() ? '' : '<br>'}encore en évolution. Affaire à suivre...
     </p>
     <button id="jaffar-return-btn" style="
       opacity: 0;
