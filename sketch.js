@@ -1758,21 +1758,27 @@ function smoothScrollToTop() {
   const dur = 1000; // durée en ms
 
   function cancel() {
-    if (_scrollRaf) { cancelAnimationFrame(_scrollRaf); _scrollRaf = null; }
-    window.removeEventListener('wheel', cancel);
-    window.removeEventListener('touchstart', cancel);
-    window.removeEventListener('pointerdown', cancel);
+    if (_scrollRaf) {
+      cancelAnimationFrame(_scrollRaf);
+      _scrollRaf = null;
+    }
+    window.removeEventListener("wheel", cancel);
+    window.removeEventListener("touchstart", cancel);
+    window.removeEventListener("pointerdown", cancel);
   }
-  window.addEventListener('wheel', cancel, { once: true, passive: true });
-  window.addEventListener('touchstart', cancel, { once: true, passive: true });
-  window.addEventListener('pointerdown', cancel, { once: true, passive: true });
+  window.addEventListener("wheel", cancel, { once: true, passive: true });
+  window.addEventListener("touchstart", cancel, { once: true, passive: true });
+  window.addEventListener("pointerdown", cancel, { once: true, passive: true });
 
   function step(now) {
     const p = Math.min((now - t0) / dur, 1);
     const ease = 1 - Math.pow(1 - p, 3); // easeOutCubic
     window.scrollTo(0, start * (1 - ease));
     if (p < 1) _scrollRaf = requestAnimationFrame(step);
-    else { _scrollRaf = null; cancel(); }
+    else {
+      _scrollRaf = null;
+      cancel();
+    }
   }
   _scrollRaf = requestAnimationFrame(step);
 }
