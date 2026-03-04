@@ -1493,7 +1493,7 @@ function ensureJaffarSection() {
   const btn = document.getElementById("jaffar-return-btn");
   if (btn) {
     btn.addEventListener("click", () => {
-      smoothScrollToTop(1500);
+      smoothScrollToTop();
     });
     const svg = btn.querySelector("svg");
     btn.addEventListener("mouseenter", () => {
@@ -1507,9 +1507,9 @@ function ensureJaffarSection() {
 
 // Met à jour la position du texte Jaffar directement en fonction du scroll (scroll-linked)
 function updateJaffarSection(scrollProgress) {
-  // Zone d'animation du texte : scrollProgress 0.82 → 0.95
-  const textStart = 0.82;
-  const textEnd = 0.95;
+  // Zone d'animation du texte : scrollProgress 0.68 → 0.82 (apparaît plus tôt)
+  const textStart = 0.68;
+  const textEnd = 0.82;
 
   if (scrollProgress < textStart) {
     // Pas encore dans la zone → cacher complètement
@@ -1525,7 +1525,10 @@ function updateJaffarSection(scrollProgress) {
   ensureJaffarSection();
 
   // Progression locale 0→1 dans la zone textStart→textEnd
-  const t = Math.min(1, Math.max(0, (scrollProgress - textStart) / (textEnd - textStart)));
+  const t = Math.min(
+    1,
+    Math.max(0, (scrollProgress - textStart) / (textEnd - textStart)),
+  );
 
   // translateY : 100% → 0% (vient d'en bas, repart en bas)
   const translateY = (1 - t) * 100;
@@ -1745,51 +1748,33 @@ function setupVideoPlayer() {
   });
 }
 
-// Scroll vers le haut avec durée personnalisée, annulable par interaction utilisateur
-let _smoothScrollRafId = null;
-
-function smoothScrollToTop(duration) {
-  // Annuler tout scroll en cours
-  if (_smoothScrollRafId) cancelAnimationFrame(_smoothScrollRafId);
-
-  const start = window.pageYOffset || document.documentElement.scrollTop;
+// Scroll vers le haut — fluide, ~1s, annulable au toucher
+let _scrollRaf = null;
+function smoothScrollToTop() {
+  if (_scrollRaf) cancelAnimationFrame(_scrollRaf);
+  const start = window.pageYOffset;
   if (start === 0) return;
-  const startTime = performance.now();
+  const t0 = performance.now();
+  const dur = 1000; // durée en ms
 
-  // Annuler dès que l'utilisateur touche/scroll manuellement
-  function cancelScroll() {
-    if (_smoothScrollRafId) {
-      cancelAnimationFrame(_smoothScrollRafId);
-      _smoothScrollRafId = null;
-    }
-    cleanup();
+  function cancel() {
+    if (_scrollRaf) { cancelAnimationFrame(_scrollRaf); _scrollRaf = null; }
+    window.removeEventListener('wheel', cancel);
+    window.removeEventListener('touchstart', cancel);
+    window.removeEventListener('pointerdown', cancel);
   }
+  window.addEventListener('wheel', cancel, { once: true, passive: true });
+  window.addEventListener('touchstart', cancel, { once: true, passive: true });
+  window.addEventListener('pointerdown', cancel, { once: true, passive: true });
 
-  function cleanup() {
-    window.removeEventListener("wheel", cancelScroll);
-    window.removeEventListener("touchstart", cancelScroll);
-    window.removeEventListener("pointerdown", cancelScroll);
-  }
-
-  window.addEventListener("wheel", cancelScroll, { once: true, passive: true });
-  window.addEventListener("touchstart", cancelScroll, { once: true, passive: true });
-  window.addEventListener("pointerdown", cancelScroll, { once: true, passive: true });
-
-  function step(currentTime) {
-    const elapsed = currentTime - startTime;
-    const t = Math.min(elapsed / duration, 1);
-    // easeOutQuart pour démarrage immédiat puis décélération
-    const ease = 1 - Math.pow(1 - t, 4);
+  function step(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3); // easeOutCubic
     window.scrollTo(0, start * (1 - ease));
-    if (t < 1) {
-      _smoothScrollRafId = requestAnimationFrame(step);
-    } else {
-      _smoothScrollRafId = null;
-      cleanup();
-    }
+    if (p < 1) _scrollRaf = requestAnimationFrame(step);
+    else { _scrollRaf = null; cancel(); }
   }
-
-  _smoothScrollRafId = requestAnimationFrame(step);
+  _scrollRaf = requestAnimationFrame(step);
 }
 
 function formatTime(seconds) {
