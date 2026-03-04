@@ -1262,20 +1262,14 @@ function handleVerticalScroll() {
     hideHint(); // Ceci va aussi cacher les flèches
   }
 
-  if (scrollProgress >= 0.45) {
+  if (scrollProgress >= 0.35) {
     createOrShowVideo(scrollProgress);
   } else {
     hideVideo();
   }
 
-  // Section Jaffar sous la vidéo
-  if (scrollProgress >= 0.88 && !jaffarVisible) {
-    jaffarVisible = true;
-    showJaffarSection();
-  } else if (scrollProgress < 0.82 && jaffarVisible) {
-    jaffarVisible = false;
-    hideJaffarSection();
-  }
+  // Section Jaffar sous la vidéo — scroll-linked
+  updateJaffarSection(scrollProgress);
 
   handleNavigationTransition(scrollProgress);
 }
@@ -1439,12 +1433,9 @@ function updateGradientOnScroll(scrollProgress) {
   gradientOverlay.style.opacity = 1;
 }
 
-function showJaffarSection() {
+// Crée l'élément Jaffar UNE SEULE FOIS (lazy), puis le garde dans le DOM
+function ensureJaffarSection() {
   if (jaffarSectionEl) return;
-
-  // Cache la flèche de scroll vers le bas
-  const bottomSection = document.querySelector(".bottom-section");
-  if (bottomSection) bottomSection.style.opacity = "0";
 
   jaffarSectionEl = document.createElement("div");
   jaffarSectionEl.id = "jaffar-end-section";
@@ -1453,18 +1444,18 @@ function showJaffarSection() {
     bottom: 0;
     left: 0;
     width: 100vw;
-    height: 22vh;
+    height: auto;
     background: transparent;
     z-index: 1000001;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    padding-bottom: 32px;
+    padding: 0 24px 36px 24px;
     box-sizing: border-box;
     transform: translateY(100%);
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: auto;
+    pointer-events: none;
+    will-change: transform, opacity;
   `;
 
   jaffarSectionEl.innerHTML = `
@@ -1476,15 +1467,12 @@ function showJaffarSection() {
       line-height: 1.9;
       letter-spacing: 0.3px;
       text-align: center;
-      margin: 0 0 16px 0;
-      opacity: 0;
-      transition: opacity 0.7s ease 0.3s;
+      margin: 0 0 18px 0;
+      padding: 0 16px;
     ">
-      Jaffar, c'est un alter-ego, un personnage focalisé sur l'instanté,${isMobileDevice() ? '' : '<br>'}encore en évolution. Affaire à suivre...
+      Jaffar, c'est un alter-ego, un personnage focalisé sur l'instanté,${isMobileDevice() ? "" : "<br>"}encore en évolution. Affaire à suivre...
     </p>
     <button id="jaffar-return-btn" style="
-      opacity: 0;
-      transition: opacity 0.6s ease 0.4s;
       background: none;
       border: none;
       cursor: pointer;
@@ -1501,44 +1489,53 @@ function showJaffarSection() {
 
   document.body.appendChild(jaffarSectionEl);
 
-  // Déclenche l'animation slide-up + affiche texte et flèche directement
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      jaffarSectionEl.style.transform = "translateY(0)";
-      const text = document.getElementById("jaffar-end-text");
-      if (text) text.style.opacity = "1";
-      const btn = document.getElementById("jaffar-return-btn");
-      if (btn) {
-        btn.style.opacity = "1";
-        btn.addEventListener("click", () => {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-        const svg = btn.querySelector("svg");
-        btn.addEventListener("mouseenter", () => {
-          if (svg) svg.style.transform = "scale(1.15)";
-        });
-        btn.addEventListener("mouseleave", () => {
-          if (svg) svg.style.transform = "scale(1)";
-        });
-      }
+  // Événements sur le bouton retour
+  const btn = document.getElementById("jaffar-return-btn");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      smoothScrollToTop(1500);
     });
-  });
+    const svg = btn.querySelector("svg");
+    btn.addEventListener("mouseenter", () => {
+      if (svg) svg.style.transform = "scale(1.15)";
+    });
+    btn.addEventListener("mouseleave", () => {
+      if (svg) svg.style.transform = "scale(1)";
+    });
+  }
 }
 
-function hideJaffarSection() {
-  if (!jaffarSectionEl) return;
-  clearTimeout(jaffarArrowTimeout);
+// Met à jour la position du texte Jaffar directement en fonction du scroll (scroll-linked)
+function updateJaffarSection(scrollProgress) {
+  // Zone d'animation du texte : scrollProgress 0.82 → 0.95
+  const textStart = 0.82;
+  const textEnd = 0.95;
 
-  jaffarSectionEl.style.transform = "translateY(100%)";
+  if (scrollProgress < textStart) {
+    // Pas encore dans la zone → cacher complètement
+    if (jaffarSectionEl) {
+      jaffarSectionEl.style.transform = "translateY(100%)";
+      jaffarSectionEl.style.opacity = "0";
+      jaffarSectionEl.style.pointerEvents = "none";
+    }
+    return;
+  }
 
-  const bottomSection = document.querySelector(".bottom-section");
-  if (bottomSection) bottomSection.style.opacity = "";
+  // Créer l'élément si nécessaire
+  ensureJaffarSection();
 
-  const el = jaffarSectionEl;
-  jaffarSectionEl = null;
-  setTimeout(() => {
-    if (el && el.parentNode) el.parentNode.removeChild(el);
-  }, 800);
+  // Progression locale 0→1 dans la zone textStart→textEnd
+  const t = Math.min(1, Math.max(0, (scrollProgress - textStart) / (textEnd - textStart)));
+
+  // translateY : 100% → 0% (vient d'en bas, repart en bas)
+  const translateY = (1 - t) * 100;
+  jaffarSectionEl.style.transform = `translateY(${translateY}%)`;
+  jaffarSectionEl.style.opacity = String(t);
+  jaffarSectionEl.style.pointerEvents = t > 0.8 ? "auto" : "none";
+
+  // Cacher la flèche du bas quand le texte apparaît
+  const bottomSec = document.querySelector(".bottom-section");
+  if (bottomSec) bottomSec.style.opacity = t > 0 ? "0" : "";
 }
 
 function createOrShowVideo(scrollProgress) {
@@ -1581,12 +1578,12 @@ function createOrShowVideo(scrollProgress) {
     document.body.appendChild(videoContainer);
   }
 
-  const videoOpacity = Math.min(1, (scrollProgress - 0.45) / 0.35);
+  const videoOpacity = Math.min(1, (scrollProgress - 0.35) / 0.35);
   videoContainer.style.opacity = videoOpacity;
   videoContainer.style.display = "flex";
 
   // Parallax : appliqué sur la vidéo elle-même, monte de +30px à -150px
-  const t = Math.min(1, Math.max(0, (scrollProgress - 0.45) / 0.35));
+  const t = Math.min(1, Math.max(0, (scrollProgress - 0.35) / 0.35));
   const parallaxY = Math.round(120 - 170 * t);
   const innerVideo = videoContainer.firstElementChild;
   if (innerVideo) innerVideo.style.transform = `translateY(${parallaxY}px)`;
@@ -1746,6 +1743,53 @@ function setupVideoPlayer() {
       video.currentTime = 0;
     } catch (e) {}
   });
+}
+
+// Scroll vers le haut avec durée personnalisée, annulable par interaction utilisateur
+let _smoothScrollRafId = null;
+
+function smoothScrollToTop(duration) {
+  // Annuler tout scroll en cours
+  if (_smoothScrollRafId) cancelAnimationFrame(_smoothScrollRafId);
+
+  const start = window.pageYOffset || document.documentElement.scrollTop;
+  if (start === 0) return;
+  const startTime = performance.now();
+
+  // Annuler dès que l'utilisateur touche/scroll manuellement
+  function cancelScroll() {
+    if (_smoothScrollRafId) {
+      cancelAnimationFrame(_smoothScrollRafId);
+      _smoothScrollRafId = null;
+    }
+    cleanup();
+  }
+
+  function cleanup() {
+    window.removeEventListener("wheel", cancelScroll);
+    window.removeEventListener("touchstart", cancelScroll);
+    window.removeEventListener("pointerdown", cancelScroll);
+  }
+
+  window.addEventListener("wheel", cancelScroll, { once: true, passive: true });
+  window.addEventListener("touchstart", cancelScroll, { once: true, passive: true });
+  window.addEventListener("pointerdown", cancelScroll, { once: true, passive: true });
+
+  function step(currentTime) {
+    const elapsed = currentTime - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    // easeOutQuart pour démarrage immédiat puis décélération
+    const ease = 1 - Math.pow(1 - t, 4);
+    window.scrollTo(0, start * (1 - ease));
+    if (t < 1) {
+      _smoothScrollRafId = requestAnimationFrame(step);
+    } else {
+      _smoothScrollRafId = null;
+      cleanup();
+    }
+  }
+
+  _smoothScrollRafId = requestAnimationFrame(step);
 }
 
 function formatTime(seconds) {
