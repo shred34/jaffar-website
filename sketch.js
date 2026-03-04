@@ -1432,7 +1432,7 @@ function ensureJaffarSection() {
       margin: 0 0 18px 0;
       padding: 0 16px;
     ">
-      Jaffar, c'est un alter-ego, un personnage focalisé sur l'instanté,${isMobileDevice() ? "" : "<br>"}encore en évolution. Affaire à suivre...
+      Jaffar, c'est un alter-ego, un personnage focalisé sur l'instanté, ${isMobileDevice() ? "" : "<br>"}encore en évolution. Affaire à suivre...
     </p>
     <button id="jaffar-return-btn" style="
       background: none;
