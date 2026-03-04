@@ -815,6 +815,12 @@ function setupEventListeners() {
 
   if (bottomSection) {
     bottomSection.addEventListener("click", function () {
+      // Fade out rapide de la flèche avant le scroll
+      bottomSection.classList.remove("arrow-entering", "arrow-leaving");
+      bottomSection.style.transition = "opacity 0.15s ease";
+      bottomSection.style.opacity = "0";
+      arrowWasHidden = true;
+      setTimeout(() => { bottomSection.style.transition = ""; }, 200);
       window.scrollTo({
         top: window.innerHeight * 0.8,
         behavior: "smooth",
@@ -1180,26 +1186,17 @@ function handleVerticalScroll() {
         dragHint = null;
       }
       cancelMobileSequence();
-      // Ne PAS afficher la flèche, juste s'assurer qu'elle reste cachée
       arrowWasHidden = true;
       bottomSection.style.opacity = 0;
-      // Sortir de la fonction pour éviter l'animation de sortie de la flèche
       return;
     }
 
-    // On commence à scroller vers le bas → lancer l'animation de sortie
-    bottomSection.classList.remove("arrow-entering");
-    bottomSection.style.opacity = "";
-    bottomSection.style.transform = "";
-    bottomSection.classList.add("arrow-leaving");
-    const onLeaveEnd = () => {
-      bottomSection.classList.remove("arrow-leaving");
-      bottomSection.style.opacity = 0;
-      bottomSection.style.transform = "translateX(-50%) translateY(-300px)";
-      arrowWasHidden = true;
-      bottomSection.removeEventListener("animationend", onLeaveEnd);
-    };
-    bottomSection.addEventListener("animationend", onLeaveEnd, { once: true });
+    // On scroll vers le bas → fade out rapide immédiat (pas d'animation CSS lourde)
+    bottomSection.classList.remove("arrow-entering", "arrow-leaving");
+    bottomSection.style.transition = "opacity 0.15s ease";
+    bottomSection.style.opacity = "0";
+    arrowWasHidden = true;
+    setTimeout(() => { bottomSection.style.transition = ""; }, 200);
   } else if (scrollProgress <= 0.01 && arrowWasHidden && !isEntering) {
     // On est revenu tout en haut → lancer l'animation d'entrée
     // MAIS : ne pas interférer avec la séquence mobile
@@ -1493,6 +1490,13 @@ function ensureJaffarSection() {
   const btn = document.getElementById("jaffar-return-btn");
   if (btn) {
     btn.addEventListener("click", () => {
+      // Fade out rapide du texte Jaffar avant le scroll
+      if (jaffarSectionEl) {
+        jaffarSectionEl.style.transition = "opacity 0.15s ease";
+        jaffarSectionEl.style.opacity = "0";
+        jaffarSectionEl.style.pointerEvents = "none";
+        setTimeout(() => { jaffarSectionEl.style.transition = ""; }, 200);
+      }
       smoothScrollToTop();
     });
     const svg = btn.querySelector("svg");
@@ -1748,39 +1752,9 @@ function setupVideoPlayer() {
   });
 }
 
-// Scroll vers le haut — fluide, ~1s, annulable au toucher
-let _scrollRaf = null;
+// Scroll vers le haut — natif navigateur
 function smoothScrollToTop() {
-  if (_scrollRaf) cancelAnimationFrame(_scrollRaf);
-  const start = window.pageYOffset;
-  if (start === 0) return;
-  const t0 = performance.now();
-  const dur = 1000; // durée en ms
-
-  function cancel() {
-    if (_scrollRaf) {
-      cancelAnimationFrame(_scrollRaf);
-      _scrollRaf = null;
-    }
-    window.removeEventListener("wheel", cancel);
-    window.removeEventListener("touchstart", cancel);
-    window.removeEventListener("pointerdown", cancel);
-  }
-  window.addEventListener("wheel", cancel, { once: true, passive: true });
-  window.addEventListener("touchstart", cancel, { once: true, passive: true });
-  window.addEventListener("pointerdown", cancel, { once: true, passive: true });
-
-  function step(now) {
-    const p = Math.min((now - t0) / dur, 1);
-    const ease = 1 - Math.pow(1 - p, 3); // easeOutCubic
-    window.scrollTo(0, start * (1 - ease));
-    if (p < 1) _scrollRaf = requestAnimationFrame(step);
-    else {
-      _scrollRaf = null;
-      cancel();
-    }
-  }
-  _scrollRaf = requestAnimationFrame(step);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function formatTime(seconds) {
