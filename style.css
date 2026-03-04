@@ -299,6 +299,7 @@ body {
 
 .project-image {
     width: 380px;
+    max-width: 90vw;
     height: 280px;
     object-fit: cover;
     border-radius: 8px;
