@@ -83,6 +83,11 @@ let isDraggingGlobal = false;
 // Variable pour l'animation d'entrée de la flèche
 let arrowWasHidden = false;
 
+// Boucle infinie scroll
+let jaffarSectionEl = null;
+let jaffarArrowTimeout = null;
+let jaffarVisible = false;
+
 // Constantes de configuration
 const MOBILE_SEQUENCE_TIMING = {
   ARROW_DISPLAY: 2000, // Durée d'affichage de la flèche (ms)
@@ -159,7 +164,8 @@ document.addEventListener("DOMContentLoaded", function () {
           el.classList.contains("nav-dot") ||
           el.classList.contains("project-item") ||
           el.classList.contains("drag-hint") ||
-          el.classList.contains("ghost-artist") ||
+          el.classList.contains("bottom-section") ||
+          el.classList.contains("scroll-arrow") ||
           (el.closest &&
             el.closest(
               ".nav-fixed, .video-controls, .project-item, .drag-hint",
@@ -200,6 +206,30 @@ function initializeElements() {
   timeDisplay = document.getElementById("timeDisplay");
   fullscreenBtn = document.getElementById("fullscreenBtn");
   videoControls = document.getElementById("videoControls");
+
+  // Pré-créer l'overlay gradient pour éviter le saut visuel au premier scroll
+  if (mainContainer && !document.querySelector(".gradient-overlay")) {
+    const gradientOverlay = document.createElement("div");
+    gradientOverlay.className = "gradient-overlay";
+    gradientOverlay.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 150;
+      pointer-events: none;
+      opacity: 1;
+      background: linear-gradient(to bottom,
+        transparent 0%,
+        transparent 95%,
+        rgba(204,204,204,0.3) 97%,
+        rgba(102,102,102,0.6) 98.5%,
+        rgba(0,0,0,0.9) 99.5%,
+        rgba(0,0,0,1) 100%);
+    `;
+    mainContainer.appendChild(gradientOverlay);
+  }
 }
 
 // MINI-FLÈCHES : Créer les flèches
@@ -939,12 +969,16 @@ function setupGlobalDrag() {
       const sensitivity = 30;
 
       // Verrouiller la direction au premier mouvement significatif
-      if (!touchDirectionLocked && (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8)) {
-        touchDirectionLocked = Math.abs(deltaX) >= Math.abs(deltaY) ? 'horizontal' : 'vertical';
+      if (
+        !touchDirectionLocked &&
+        (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8)
+      ) {
+        touchDirectionLocked =
+          Math.abs(deltaX) >= Math.abs(deltaY) ? "horizontal" : "vertical";
       }
 
       // Si horizontal : bloquer le scroll vertical immédiatement
-      if (touchDirectionLocked === 'horizontal') {
+      if (touchDirectionLocked === "horizontal") {
         e.preventDefault();
 
         if (Math.abs(deltaX) > sensitivity) {
@@ -994,7 +1028,8 @@ function isInteractiveElement(element) {
       current.classList.contains("video-controls") ||
       current.classList.contains("back-button") ||
       current.classList.contains("page") ||
-      current.classList.contains("scroll-arrow")
+      current.classList.contains("scroll-arrow") ||
+      current.classList.contains("bottom-section")
     ) {
       return true;
     }
@@ -1089,7 +1124,7 @@ function startMobileReturnSequence() {
 function handleVerticalScroll() {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   const windowHeight = window.innerHeight;
-  const scrollProgress = Math.min(scrollTop / (windowHeight * 0.2), 1);
+  const scrollProgress = Math.min(scrollTop / (windowHeight * 0.85), 1);
   const isMobile = isMobileDevice();
 
   if (scrollTop > 2 && !hasScrolledDown) {
@@ -1227,15 +1262,23 @@ function handleVerticalScroll() {
     hideHint(); // Ceci va aussi cacher les flèches
   }
 
-  if (scrollProgress >= 0.6) {
+  if (scrollProgress >= 0.45) {
     createOrShowVideo(scrollProgress);
   } else {
     hideVideo();
   }
 
+  // Section Jaffar sous la vidéo
+  if (scrollProgress >= 0.88 && !jaffarVisible) {
+    jaffarVisible = true;
+    showJaffarSection();
+  } else if (scrollProgress < 0.82 && jaffarVisible) {
+    jaffarVisible = false;
+    hideJaffarSection();
+  }
+
   handleNavigationTransition(scrollProgress);
 }
-s;
 
 function handleNavigationTransition(scrollProgress) {
   const navFixed = document.querySelector(".nav-fixed");
@@ -1376,54 +1419,127 @@ function navigateToContact(e) {
 }
 
 function updateGradientOnScroll(scrollProgress) {
-  if (scrollProgress <= 0.05) {
-    mainContainer.style.background = `linear-gradient(to bottom, 
-      #f8f8f8 0%, 
-      #f8f8f8 86%, 
-      #f6f6f6 92%, 
-      #f0f0f0 96%, 
-      #e8e8e8 98%, 
-      #000 100%)`;
+  const gradientOverlay = document.querySelector(".gradient-overlay");
+  if (!gradientOverlay) return;
 
-    const gradientOverlay = document.querySelector(".gradient-overlay");
-    if (gradientOverlay) {
-      gradientOverlay.style.background = "transparent";
-    }
-    return;
-  }
-
-  const intensity = scrollProgress;
+  const intensity = Math.max(0, scrollProgress);
   const blackProgress = intensity * 100;
 
-  const gradientStart = Math.max(0, 75 - blackProgress * 0.75);
-  const gradientMid = Math.max(0, 85 - blackProgress * 0.85);
-  const gradientEnd = Math.max(0, 92 - blackProgress * 0.92);
+  const gradientStart = Math.max(0, 95 - blackProgress * 0.95);
+  const gradientMid = Math.max(0, 97 - blackProgress * 0.97);
+  const gradientEnd = Math.max(0, 98.5 - blackProgress * 0.985);
 
-  const overlayGradient = `linear-gradient(to bottom, 
-    transparent 0%, 
-    transparent ${gradientStart}%, 
-    rgba(204,204,204,0.4) ${gradientMid}%, 
-    rgba(102,102,102,0.8) ${gradientEnd}%, 
+  gradientOverlay.style.background = `linear-gradient(to bottom,
+    transparent 0%,
+    transparent ${gradientStart}%,
+    rgba(204,204,204,0.4) ${gradientMid}%,
+    rgba(102,102,102,0.8) ${gradientEnd}%,
     rgba(0,0,0,0.98) ${Math.min(gradientEnd + 3, 100)}%,
     rgba(0,0,0,1) 100%)`;
+  gradientOverlay.style.opacity = 1;
+}
 
-  if (!document.querySelector(".gradient-overlay")) {
-    const gradientOverlay = document.createElement("div");
-    gradientOverlay.className = "gradient-overlay";
-    gradientOverlay.style.cssText = `
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 150;
-      pointer-events: none;
-    `;
-    mainContainer.appendChild(gradientOverlay);
-  }
+function showJaffarSection() {
+  if (jaffarSectionEl) return;
 
-  const gradientOverlay = document.querySelector(".gradient-overlay");
-  gradientOverlay.style.background = overlayGradient;
+  // Cache la flèche de scroll vers le bas
+  const bottomSection = document.querySelector(".bottom-section");
+  if (bottomSection) bottomSection.style.opacity = "0";
+
+  jaffarSectionEl = document.createElement("div");
+  jaffarSectionEl.id = "jaffar-end-section";
+  jaffarSectionEl.style.cssText = `
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 22vh;
+    background: transparent;
+    z-index: 1000001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 32px;
+    box-sizing: border-box;
+    transform: translateY(100%);
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+  `;
+
+  jaffarSectionEl.innerHTML = `
+    <p id="jaffar-end-text" style="
+      color: white;
+      font-family: 'Rebond Grotesque', sans-serif;
+      font-weight: 200;
+      font-size: 13px;
+      line-height: 1.9;
+      letter-spacing: 0.3px;
+      text-align: center;
+      margin: 0 0 16px 0;
+      opacity: 0;
+      transition: opacity 0.7s ease 0.3s;
+    ">
+      Jaffar, c'est un alter-ego, un personnage focalisé sur l'instanté,<br>
+      encore en évolution. Affaire à suivre...
+    </p>
+    <button id="jaffar-return-btn" style="
+      opacity: 0;
+      transition: opacity 0.6s ease 0.4s;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    ">
+      <svg width="22" height="12" viewBox="0 0 22 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="transition: transform 0.3s ease;">
+        <path d="M1 11L11 1L21 11" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  `;
+
+  document.body.appendChild(jaffarSectionEl);
+
+  // Déclenche l'animation slide-up + affiche texte et flèche directement
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      jaffarSectionEl.style.transform = "translateY(0)";
+      const text = document.getElementById("jaffar-end-text");
+      if (text) text.style.opacity = "1";
+      const btn = document.getElementById("jaffar-return-btn");
+      if (btn) {
+        btn.style.opacity = "1";
+        btn.addEventListener("click", () => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        const svg = btn.querySelector("svg");
+        btn.addEventListener("mouseenter", () => {
+          if (svg) svg.style.transform = "scale(1.15)";
+        });
+        btn.addEventListener("mouseleave", () => {
+          if (svg) svg.style.transform = "scale(1)";
+        });
+      }
+    });
+  });
+}
+
+function hideJaffarSection() {
+  if (!jaffarSectionEl) return;
+  clearTimeout(jaffarArrowTimeout);
+
+  jaffarSectionEl.style.transform = "translateY(100%)";
+
+  const bottomSection = document.querySelector(".bottom-section");
+  if (bottomSection) bottomSection.style.opacity = "";
+
+  const el = jaffarSectionEl;
+  jaffarSectionEl = null;
+  setTimeout(() => {
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }, 800);
 }
 
 function createOrShowVideo(scrollProgress) {
@@ -1466,9 +1582,15 @@ function createOrShowVideo(scrollProgress) {
     document.body.appendChild(videoContainer);
   }
 
-  const videoOpacity = Math.min(1, (scrollProgress - 0.6) / 0.4);
+  const videoOpacity = Math.min(1, (scrollProgress - 0.45) / 0.35);
   videoContainer.style.opacity = videoOpacity;
   videoContainer.style.display = "flex";
+
+  // Parallax : appliqué sur la vidéo elle-même, monte de +30px à -150px
+  const t = Math.min(1, Math.max(0, (scrollProgress - 0.45) / 0.35));
+  const parallaxY = Math.round(120 - 170 * t);
+  const innerVideo = videoContainer.firstElementChild;
+  if (innerVideo) innerVideo.style.transform = `translateY(${parallaxY}px)`;
 }
 
 function hideVideo() {
