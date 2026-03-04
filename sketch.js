@@ -205,6 +205,11 @@ function initializeElements() {
   bottomSection = document.getElementById("bottomSection");
   mainContainer = document.querySelector(".main-container");
   navigationDots = document.getElementById("navigationDots");
+
+  // Sur mobile, positionner immédiatement la flèche pour éviter le glitch de position au chargement
+  if (isMobileDevice() && bottomSection) {
+    positionElementAtBottom(bottomSection);
+  }
   video = document.getElementById("mainVideo");
   videoThumbnail = document.getElementById("videoThumbnail");
   playButton = document.getElementById("playButton");
