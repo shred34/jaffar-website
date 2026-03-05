@@ -873,11 +873,9 @@ function setupGlobalDrag() {
   let touchDirectionLocked = null;
   let dragThreshold = 10; // Seuil pour distinguer clic et drag
 
-  // Mobile : snap contrôlé catégorie par catégorie
+  // Mobile : snap contrôlé
   let mobileSnappedDuringMove = false;
-  let mobileLastSnapTime = 0;
-  const MOBILE_SNAP_THRESHOLD = 70;  // Distance en px pour déclencher un snap
-  const MOBILE_SNAP_COOLDOWN = 280;  // Temps minimum entre 2 snaps (ms)
+  const MOBILE_SNAP_THRESHOLD = 50; // Distance en px pour déclencher un snap pendant le drag continu
 
   document.addEventListener("mousedown", function (e) {
     // Ignorer navigation
@@ -1010,18 +1008,14 @@ function setupGlobalDrag() {
       if (touchDirectionLocked === "horizontal") {
         e.preventDefault();
 
-        const now = Date.now();
-        const timeSinceLastSnap = now - mobileLastSnapTime;
-
-        // Snap contrôlé : seuil de distance + cooldown temporel
-        if (Math.abs(deltaX) > MOBILE_SNAP_THRESHOLD && timeSinceLastSnap > MOBILE_SNAP_COOLDOWN) {
+        // Rotation continue : chaque fois que le doigt parcourt le seuil, on avance d'une catégorie
+        if (Math.abs(deltaX) > MOBILE_SNAP_THRESHOLD) {
           if (deltaX > 0) {
             prevProjectInfinite();
           } else {
             nextProjectInfinite();
           }
           startX = e.touches[0].clientX;
-          mobileLastSnapTime = now;
           mobileSnappedDuringMove = true;
         }
       }
@@ -1032,7 +1026,12 @@ function setupGlobalDrag() {
   document.addEventListener("touchend", function (e) {
     if (isDragging) {
       // Swipe rapide sans snap pendant le move : snapper d'une catégorie au relâchement
-      if (!mobileSnappedDuringMove && touchDirectionLocked === "horizontal" && e.changedTouches && e.changedTouches.length > 0) {
+      if (
+        !mobileSnappedDuringMove &&
+        touchDirectionLocked === "horizontal" &&
+        e.changedTouches &&
+        e.changedTouches.length > 0
+      ) {
         const finalDeltaX = e.changedTouches[0].clientX - startX;
         if (Math.abs(finalDeltaX) > 25) {
           if (finalDeltaX > 0) {

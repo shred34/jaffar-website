@@ -287,14 +287,16 @@ body {
     z-index: 1;
 }
 
-/* Hover du projet central */
-.project-item.center:hover {
-    transform: translateX(0) translateZ(20px) scale(1.05);
-}
+/* Hover du projet central — desktop uniquement */
+@media (pointer: fine) {
+  .project-item.center:hover {
+      transform: translateX(0) translateZ(20px) scale(1.05);
+  }
 
-.project-item.center:hover .project-title {
-    font-size: 22px;
-    font-weight: 400;
+  .project-item.center:hover .project-title {
+      font-size: 22px;
+      font-weight: 400;
+  }
 }
 
 .project-image {
