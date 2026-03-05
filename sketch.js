@@ -873,9 +873,11 @@ function setupGlobalDrag() {
   let touchDirectionLocked = null;
   let dragThreshold = 10; // Seuil pour distinguer clic et drag
 
-  // Mobile : snap contrôlé
+  // Mobile : snap swipe vs long drag
+  let touchStartTime = 0;
   let mobileSnappedDuringMove = false;
-  const MOBILE_SNAP_THRESHOLD = 50; // Distance en px pour déclencher un snap pendant le drag continu
+  const MOBILE_LONG_TOUCH_DELAY = 250; // ms avant d'activer le mode drag continu
+  const MOBILE_DRAG_THRESHOLD = 50;    // px pour chaque snap pendant le drag continu
 
   document.addEventListener("mousedown", function (e) {
     // Ignorer navigation
@@ -974,8 +976,7 @@ function setupGlobalDrag() {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       touchDirectionLocked = null;
-
-      // Mobile snap : reset état
+      touchStartTime = Date.now();
       mobileSnappedDuringMove = false;
 
       if (dragHint) {
@@ -1008,16 +1009,21 @@ function setupGlobalDrag() {
       if (touchDirectionLocked === "horizontal") {
         e.preventDefault();
 
-        // Rotation continue : chaque fois que le doigt parcourt le seuil, on avance d'une catégorie
-        if (Math.abs(deltaX) > MOBILE_SNAP_THRESHOLD) {
-          if (deltaX > 0) {
-            prevProjectInfinite();
-          } else {
-            nextProjectInfinite();
+        const touchDuration = Date.now() - touchStartTime;
+
+        // Mode drag continu : seulement après un appui suffisamment long
+        if (touchDuration > MOBILE_LONG_TOUCH_DELAY) {
+          if (Math.abs(deltaX) > MOBILE_DRAG_THRESHOLD) {
+            if (deltaX > 0) {
+              prevProjectInfinite();
+            } else {
+              nextProjectInfinite();
+            }
+            startX = e.touches[0].clientX;
+            mobileSnappedDuringMove = true;
           }
-          startX = e.touches[0].clientX;
-          mobileSnappedDuringMove = true;
         }
+        // Swipe rapide : on ne bouge rien pendant le move, on snap au touchend
       }
     },
     { passive: false },
@@ -1025,15 +1031,10 @@ function setupGlobalDrag() {
 
   document.addEventListener("touchend", function (e) {
     if (isDragging) {
-      // Swipe rapide sans snap pendant le move : snapper d'une catégorie au relâchement
-      if (
-        !mobileSnappedDuringMove &&
-        touchDirectionLocked === "horizontal" &&
-        e.changedTouches &&
-        e.changedTouches.length > 0
-      ) {
+      // Swipe rapide : snap d'1 seule catégorie au relâchement
+      if (!mobileSnappedDuringMove && touchDirectionLocked === "horizontal" && e.changedTouches && e.changedTouches.length > 0) {
         const finalDeltaX = e.changedTouches[0].clientX - startX;
-        if (Math.abs(finalDeltaX) > 25) {
+        if (Math.abs(finalDeltaX) > 20) {
           if (finalDeltaX > 0) {
             prevProjectInfinite();
           } else {
