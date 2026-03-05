@@ -873,10 +873,11 @@ function setupGlobalDrag() {
   let touchDirectionLocked = null;
   let dragThreshold = 10; // Seuil pour distinguer clic et drag
 
-  // Mobile : variables pour le snap swipe vs long-press drag
-  let mobileLongPressTimer = null;
-  let mobileLongPressed = false;
-  let mobileSwipedOnce = false;
+  // Mobile : snap contrôlé catégorie par catégorie
+  let mobileSnappedDuringMove = false;
+  let mobileLastSnapTime = 0;
+  const MOBILE_SNAP_THRESHOLD = 70;  // Distance en px pour déclencher un snap
+  const MOBILE_SNAP_COOLDOWN = 280;  // Temps minimum entre 2 snaps (ms)
 
   document.addEventListener("mousedown", function (e) {
     // Ignorer navigation
@@ -976,13 +977,8 @@ function setupGlobalDrag() {
       startY = e.touches[0].clientY;
       touchDirectionLocked = null;
 
-      // Mobile snap : démarrer le timer long-press
-      mobileLongPressed = false;
-      mobileSwipedOnce = false;
-      if (mobileLongPressTimer) clearTimeout(mobileLongPressTimer);
-      mobileLongPressTimer = setTimeout(() => {
-        mobileLongPressed = true;
-      }, 300);
+      // Mobile snap : reset état
+      mobileSnappedDuringMove = false;
 
       if (dragHint) {
         clearTimeout(hintTimeout);
@@ -1014,23 +1010,19 @@ function setupGlobalDrag() {
       if (touchDirectionLocked === "horizontal") {
         e.preventDefault();
 
-        if (mobileLongPressed) {
-          // Long-press + drag : rotation continue (comportement existant)
-          if (Math.abs(deltaX) > sensitivity) {
-            if (deltaX > 0) {
-              prevProjectInfinite();
-            } else {
-              nextProjectInfinite();
-            }
-            startX = e.touches[0].clientX;
+        const now = Date.now();
+        const timeSinceLastSnap = now - mobileLastSnapTime;
+
+        // Snap contrôlé : seuil de distance + cooldown temporel
+        if (Math.abs(deltaX) > MOBILE_SNAP_THRESHOLD && timeSinceLastSnap > MOBILE_SNAP_COOLDOWN) {
+          if (deltaX > 0) {
+            prevProjectInfinite();
+          } else {
+            nextProjectInfinite();
           }
-        } else {
-          // Swipe rapide : annuler le timer long-press dès mouvement significatif
-          if (Math.abs(deltaX) > 15 && mobileLongPressTimer) {
-            clearTimeout(mobileLongPressTimer);
-            mobileLongPressTimer = null;
-          }
-          // Ne pas bouger le carousel ici, attendre touchend pour snapper
+          startX = e.touches[0].clientX;
+          mobileLastSnapTime = now;
+          mobileSnappedDuringMove = true;
         }
       }
     },
@@ -1039,16 +1031,10 @@ function setupGlobalDrag() {
 
   document.addEventListener("touchend", function (e) {
     if (isDragging) {
-      // Nettoyer le timer long-press
-      if (mobileLongPressTimer) {
-        clearTimeout(mobileLongPressTimer);
-        mobileLongPressTimer = null;
-      }
-
-      // Swipe rapide : snapper d'une catégorie
-      if (!mobileLongPressed && touchDirectionLocked === "horizontal" && e.changedTouches && e.changedTouches.length > 0) {
+      // Swipe rapide sans snap pendant le move : snapper d'une catégorie au relâchement
+      if (!mobileSnappedDuringMove && touchDirectionLocked === "horizontal" && e.changedTouches && e.changedTouches.length > 0) {
         const finalDeltaX = e.changedTouches[0].clientX - startX;
-        if (Math.abs(finalDeltaX) > 20) {
+        if (Math.abs(finalDeltaX) > 25) {
           if (finalDeltaX > 0) {
             prevProjectInfinite();
           } else {
@@ -1060,8 +1046,7 @@ function setupGlobalDrag() {
       isDragging = false;
       isDraggingGlobal = false;
       touchDirectionLocked = null;
-      mobileLongPressed = false;
-      mobileSwipedOnce = false;
+      mobileSnappedDuringMove = false;
     }
   });
 }
