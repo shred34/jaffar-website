@@ -873,6 +873,11 @@ function setupGlobalDrag() {
   let touchDirectionLocked = null;
   let dragThreshold = 10; // Seuil pour distinguer clic et drag
 
+  // Mobile : variables pour le snap swipe vs long-press drag
+  let mobileLongPressTimer = null;
+  let mobileLongPressed = false;
+  let mobileSwipedOnce = false;
+
   document.addEventListener("mousedown", function (e) {
     // Ignorer navigation
     if (
@@ -971,6 +976,14 @@ function setupGlobalDrag() {
       startY = e.touches[0].clientY;
       touchDirectionLocked = null;
 
+      // Mobile snap : démarrer le timer long-press
+      mobileLongPressed = false;
+      mobileSwipedOnce = false;
+      if (mobileLongPressTimer) clearTimeout(mobileLongPressTimer);
+      mobileLongPressTimer = setTimeout(() => {
+        mobileLongPressed = true;
+      }, 300);
+
       if (dragHint) {
         clearTimeout(hintTimeout);
         hideHint();
@@ -1001,24 +1014,54 @@ function setupGlobalDrag() {
       if (touchDirectionLocked === "horizontal") {
         e.preventDefault();
 
-        if (Math.abs(deltaX) > sensitivity) {
-          if (deltaX > 0) {
-            prevProjectInfinite();
-          } else {
-            nextProjectInfinite();
+        if (mobileLongPressed) {
+          // Long-press + drag : rotation continue (comportement existant)
+          if (Math.abs(deltaX) > sensitivity) {
+            if (deltaX > 0) {
+              prevProjectInfinite();
+            } else {
+              nextProjectInfinite();
+            }
+            startX = e.touches[0].clientX;
           }
-          startX = e.touches[0].clientX;
+        } else {
+          // Swipe rapide : annuler le timer long-press dès mouvement significatif
+          if (Math.abs(deltaX) > 15 && mobileLongPressTimer) {
+            clearTimeout(mobileLongPressTimer);
+            mobileLongPressTimer = null;
+          }
+          // Ne pas bouger le carousel ici, attendre touchend pour snapper
         }
       }
     },
     { passive: false },
   );
 
-  document.addEventListener("touchend", function () {
+  document.addEventListener("touchend", function (e) {
     if (isDragging) {
+      // Nettoyer le timer long-press
+      if (mobileLongPressTimer) {
+        clearTimeout(mobileLongPressTimer);
+        mobileLongPressTimer = null;
+      }
+
+      // Swipe rapide : snapper d'une catégorie
+      if (!mobileLongPressed && touchDirectionLocked === "horizontal" && e.changedTouches && e.changedTouches.length > 0) {
+        const finalDeltaX = e.changedTouches[0].clientX - startX;
+        if (Math.abs(finalDeltaX) > 20) {
+          if (finalDeltaX > 0) {
+            prevProjectInfinite();
+          } else {
+            nextProjectInfinite();
+          }
+        }
+      }
+
       isDragging = false;
       isDraggingGlobal = false;
       touchDirectionLocked = null;
+      mobileLongPressed = false;
+      mobileSwipedOnce = false;
     }
   });
 }
