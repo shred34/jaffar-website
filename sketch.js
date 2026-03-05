@@ -877,7 +877,7 @@ function setupGlobalDrag() {
   let touchStartTime = 0;
   let mobileSnappedDuringMove = false;
   const MOBILE_LONG_TOUCH_DELAY = 250; // ms avant d'activer le mode drag continu
-  const MOBILE_DRAG_THRESHOLD = 50;    // px pour chaque snap pendant le drag continu
+  const MOBILE_DRAG_THRESHOLD = 50; // px pour chaque snap pendant le drag continu
 
   document.addEventListener("mousedown", function (e) {
     // Ignorer navigation
@@ -1032,7 +1032,12 @@ function setupGlobalDrag() {
   document.addEventListener("touchend", function (e) {
     if (isDragging) {
       // Swipe rapide : snap d'1 seule catégorie au relâchement
-      if (!mobileSnappedDuringMove && touchDirectionLocked === "horizontal" && e.changedTouches && e.changedTouches.length > 0) {
+      if (
+        !mobileSnappedDuringMove &&
+        touchDirectionLocked === "horizontal" &&
+        e.changedTouches &&
+        e.changedTouches.length > 0
+      ) {
         const finalDeltaX = e.changedTouches[0].clientX - startX;
         if (Math.abs(finalDeltaX) > 20) {
           if (finalDeltaX > 0) {
