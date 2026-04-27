@@ -46,19 +46,6 @@ body {
     height: 200vh;
 }
 
-/* Bande blanche fixe qui remplit la safe area du notch iOS */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: max(50px, env(safe-area-inset-top));
-    background: #f8f8f8;
-    z-index: 9999;
-    pointer-events: none;
-}
-
 /* Navigation fixe avec transition de couleur, z-index élevé et TOUJOURS CLIQUABLE */
 .nav-fixed {
     position: fixed !important;
